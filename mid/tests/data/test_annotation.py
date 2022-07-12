@@ -3,8 +3,8 @@ import pytest
 from pytest import approx
 from skimage.transform import SimilarityTransform
 
-from spireg.data import Annotation
-from spireg.tests import read_test_data, read_data
+from mid.data import Annotation
+from mid.tests import read_test_data, read_data
 
 def test_create_annotation_instance():
 

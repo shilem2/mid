@@ -31,7 +31,7 @@ class MisRefreshDataset(Dataset):
         return s
 
     def get_ann(self, study_id=None, projection=None, body_pos=None, acquired=None, units='mm', display=False):
-        ann = get_scan_anns(self.dataset['vert_df'], self.dataset['rod_df'], self.dataset['screw_df'], self.dataset['dicom_df'],
+        ann = get_scan_anns(self.dataset['vert_df'], self.dataset['rod_df'], self.dataset['screw_df'], self.dataset['dicom_df'], None, None,
                             study_id, projection, body_pos, acquired, units=units, display=display)
         return ann
 
@@ -61,7 +61,7 @@ class MisRefreshDataset(Dataset):
         return df
 
     @staticmethod
-    def filter_anns_df(df, study_id=None, projection=None, body_pos=None, acquired=None):
+    def filter_anns_df(df, study_id=None, projection=None, body_pos=None, acquired=None, dicom_path=None, file_id=None):
         """
         Filter annotations data frame.
         At least on of the arguments other than vert_df should be given.
@@ -71,7 +71,9 @@ class MisRefreshDataset(Dataset):
         inds = ((study_id is None) | (df.StudyID == study_id)) & \
                ((projection is None) | (df.projection == projection)) & \
                ((body_pos is None) | (df.bodyPos == body_pos)) & \
-               ((acquired is None) | (df.acquired == acquired))
+               ((acquired is None) | (df.acquired == acquired)) & \
+               (('dicom_path' not in df.columns) or (dicom_path is None) | (df.dicom_path == dicom_path)) & \
+               (('file_id' not in df.columns) or (file_id is None) | (df.file_id == file_id))
 
         df_out = df[inds]
 

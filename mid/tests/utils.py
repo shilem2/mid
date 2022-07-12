@@ -1,7 +1,7 @@
 import os
 import pickle
 import blosc
-from spireg.data.utils import load_compressed_pickle
+from mid.data.utils import load_compressed_pickle
 
 
 def read_test_data(file_name='MR04-019.dat'):

@@ -301,30 +301,33 @@ class Annotation(MutableMapping):
 def dict2string(d, sep=' | ', n_new_line=2):
 
     s = ''
-    counter = 0
-    new_line = True
-    end_line = False
-    for key, val in d.items():
 
-        if val is None:
-            continue
+    if d is not None:
 
-        counter += 1
+        counter = 0
+        new_line = True
+        end_line = False
+        for key, val in d.items():
 
-        if end_line:
-            s += '\n'
-            end_line = False
-            new_line = True
+            if val is None:
+                continue
 
-        if new_line:  # TODO: maybe can unify new/end line logic
-            s += '{}: {}'.format(key, val)
-            new_line = False
+            counter += 1
 
-        else:  # add seperator
-            s += '{}'.format(sep)
-            s += '{}: {}'.format(key, val)
-            if counter % n_new_line == 0:
-                end_line = True
+            if end_line:
+                s += '\n'
+                end_line = False
+                new_line = True
+
+            if new_line:  # TODO: maybe can unify new/end line logic
+                s += '{}: {}'.format(key, val)
+                new_line = False
+
+            else:  # add seperator
+                s += '{}'.format(sep)
+                s += '{}: {}'.format(key, val)
+                if counter % n_new_line == 0:
+                    end_line = True
 
     return s
 

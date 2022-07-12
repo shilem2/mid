@@ -222,7 +222,7 @@ def get_single_screw_anns(df, id, units='pixel'):
     anns_colums = ['screwSt_x', 'screwSt_y', 'screwEnd_x', 'screwEnd_y']
     anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm
     anns = anns.reshape(-1, 2)  # [x, y]
-    name = df['vertName'].values[0]
+    name = df['vertName'].values[0] if 'vertName' in df.columns else 'sc'
 
     if units == 'pixel':  # convert values from mm to pixels
         pixel_space_x = df.pixel_space_x.values  # [mm / pix]
@@ -306,7 +306,7 @@ def get_single_rod_anns(df, id, units='pixel'):
     anns_colums = ['rodSt_x', 'rodSt_y', 'rodEnd_x', 'rodEnd_y']
     anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm
     anns = anns.reshape(-1, 2)  # [x, y]
-    name = df['vertName'].values[0]
+    name = df['vertName'].values[0] if 'vertName' in df.columns else 'r'
 
     if units == 'pixel':  # convert values from mm to pixels
         pixel_space_x = df.pixel_space_x.values  # [mm / pix]
