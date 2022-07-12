@@ -25,7 +25,8 @@ def test_export_misrefresh_to_coco():
 	ds = MisRefreshDataset(vert_dir, rod_dir, screw_dir, dicom_dir)
 
 	output_dir = test_data_path / 'output' / 'coco_dataset'
-	shutil.rmtree(output_dir)
+	if output_dir.is_dir():
+		shutil.rmtree(output_dir)  # delete dir
 	images_dir = output_dir / 'images'
 	images_dir.mkdir(parents=True, exist_ok=True)
 
@@ -35,7 +36,7 @@ def test_export_misrefresh_to_coco():
 	# convert to coco format
 	images_list = []
 	annotations_list = []
-	categories_list = get_ann_categories()
+	categories_list, cat_id2name, cat_name2id = get_ann_categories()
 	img_id = 0
 	ann_id = 0
 	for study_id in study_id_list:
@@ -71,10 +72,20 @@ def test_export_misrefresh_to_coco():
 			images_list.append(img_dict)
 
 			# annotations
-			# ktype in ['vert', 'rod', 'screw', 'icl', 'femur', 'all']
-			# verts
-			keys= ann.get_keys('vert')
+			keys = ann.get_keys('all')
 			for key in keys:
+
+				if key.startswith(ann.vert_prefix):
+					category_id = 1
+					category_name = cat_id2name[category_id]
+				elif key.startswith(ann.screw_prefix):
+					category_id = 2
+					category_name = cat_id2name[category_id]
+				elif key.startswith(ann.rod_prefix):
+					category_id = 3
+					category_name = cat_id2name[category_id]
+				else:
+					continue
 
 				ann_id += 1
 
@@ -83,7 +94,6 @@ def test_export_misrefresh_to_coco():
 				bbox = keypoints2bbox(keypoints).flatten().round(2).tolist()
 				num_keypoints = keypoints.shape[0]
 				area = bbox[2] * bbox[3]
-				category_id = 1  # 1:vert, 2:screw, 3:rod
 				keypoints = np.concatenate((keypoints, 2 * np.ones((keypoints.shape[0], 1))), axis=1).flatten().tolist()  # coco keypoints format is (x,y,v), where v is visibility flag defined as v=0: not labeled (in which case x=y=0), v=1: labeled but not visible, and v=2: labeled and visible
 
 				ann_dict = {'segmentation': segmentation,
@@ -95,41 +105,11 @@ def test_export_misrefresh_to_coco():
 							'id': ann_id,
 							'image_id': img_id,
 							'category_id': category_id,
-							'category_name': 'vert',
+							'category_name': category_name,
 							'name': key,
 							}
 
 				annotations_list.append(ann_dict)
-
-			# screws
-			keys = ann.get_keys('screw')
-			for key in keys:
-
-				ann_id += 1
-
-				keypoints = ann[key].round(2)
-				segmentation = keypoints2segmentation(keypoints).flatten().tolist()
-				bbox = keypoints2bbox(keypoints).flatten().round(2).tolist()
-				num_keypoints = keypoints.shape[0]
-				area = bbox[2] * bbox[3]
-				category_id = 2  # 1:vert, 2:screw, 3:rod
-				keypoints = np.concatenate((keypoints, 2 * np.ones((keypoints.shape[0], 1))), axis=1).flatten().tolist()  # coco keypoints format is (x,y,v), where v is visibility flag defined as v=0: not labeled (in which case x=y=0), v=1: labeled but not visible, and v=2: labeled and visible
-
-				ann_dict = {'segmentation': segmentation,
-							'bbox': bbox,
-							'keypoints': keypoints,
-							'num_keypoints': num_keypoints,
-							'area': area,
-							'iscrowd': 0,
-							'id': ann_id,
-							'image_id': img_id,
-							'category_id': category_id,
-							'category_name': 'screw',
-							'name': key,
-							}
-
-				annotations_list.append(ann_dict)
-
 
 		pass
 

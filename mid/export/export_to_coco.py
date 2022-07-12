@@ -15,7 +15,13 @@ def get_ann_categories():
 		 },
 	]
 
-	return categories
+	id2name = {}
+	name2id = {}
+	for cat in categories:
+		id2name[cat['id']] = cat['name']
+		name2id[cat['name']] = cat['id']
+
+	return categories, id2name, name2id
 
 
 def keypoints2bbox(keypoints):
