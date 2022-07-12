@@ -4,12 +4,19 @@ from skimage.filters import unsharp_mask
 from skimage import exposure, img_as_float
 
 
-def adjust_dynamic_range(img, vmin=0, vmax=255, dtype=np.float32):
+def adjust_dynamic_range(img, vmin=0, vmax=255, dtype=np.float32, min_max_type='img'):
 
     img_out = img.astype(np.float32)  # for middle calculations
-    img_out -= vmin
-    img_out *= vmax / img_out.max()
-    img_out = img_out.astype(dtype)
+
+    if min_max_type == 'img':
+        img_out -= img_out.min()
+        img_out += vmin
+        img_out *= vmax / img_out.max()
+    elif min_max_type == 'dtype':
+        max_value = np.iinfo(img.dtype).max
+        img_out *= vmax / max_value
+
+    img_out = img_out.round().astype(dtype)
 
     return img_out
 
