@@ -76,36 +76,57 @@ def test_export_misrefresh_to_coco():
 			for key in keys:
 
 				if key.startswith(ann.vert_prefix):
-					category_id = 1
-					category_name = cat_id2name[category_id]
+					# category_id = 1
+					# category_name = cat_id2name[category_id]
+					keypoints_row_index = 0
 				elif key.startswith(ann.screw_prefix):
-					category_id = 2
-					category_name = cat_id2name[category_id]
+					# category_id = 2
+					# category_name = cat_id2name[category_id]
+					keypoints_row_index = 4
 				elif key.startswith(ann.rod_prefix):
-					category_id = 3
-					category_name = cat_id2name[category_id]
+					# category_id = 3
+					# category_name = cat_id2name[category_id]
+					keypoints_row_index = 6
 				else:
 					continue
 
 				ann_id += 1
+
+				category_id = 1
 
 				keypoints = ann[key].round(2)
 				segmentation = keypoints2segmentation(keypoints).flatten().tolist()
 				bbox = keypoints2bbox(keypoints).flatten().round(2).tolist()
 				num_keypoints = keypoints.shape[0]
 				area = bbox[2] * bbox[3]
-				keypoints = np.concatenate((keypoints, 2 * np.ones((keypoints.shape[0], 1))), axis=1).flatten().tolist()  # coco keypoints format is (x,y,v), where v is visibility flag defined as v=0: not labeled (in which case x=y=0), v=1: labeled but not visible, and v=2: labeled and visible
+
+				# define keypoints in coco_spine_xr format:
+				#    [[x_vert_upper_start, y_vert_upper_start, v],
+				#     [x_vert_upper_end, y_vert_upper_end, v],
+				#     [x_vert_lower_start, y_vert_lower_start, v],
+				#     [x_vert_lower_end, y_vert_lower_end, v],
+				#     [x_screw_start, y_screw_start, v],
+				#     [x_screw_end, y_screw_end, v],
+				#     [x_rod_start, y_rod_start, v],
+				#     [x_rod_end, y_rod_end, v],
+				#    ]
+				#
+				# where v is visibility flag defined as v=0: not labeled (in which case x=y=0), v=1: labeled but not visible, and v=2: labeled and visible
+
+				keypoints_coco = np.zeros((8, 3))  #
+				keypoints = np.concatenate((keypoints, 2 * np.ones((keypoints.shape[0], 1))), axis=1)  # add visibility flag
+				keypoints_coco[keypoints_row_index:(keypoints_row_index + keypoints.shape[0]), :] = keypoints
+				keypoints_coco = keypoints_coco.flatten().tolist()
 
 				ann_dict = {'segmentation': segmentation,
 							'bbox': bbox,
-							'keypoints': keypoints,
+							'keypoints': keypoints_coco,
 							'num_keypoints': num_keypoints,
 							'area': area,
 							'iscrowd': 0,
 							'id': ann_id,
 							'image_id': img_id,
 							'category_id': category_id,
-							'category_name': category_name,
 							'name': key,
 							}
 
@@ -113,6 +134,7 @@ def test_export_misrefresh_to_coco():
 
 		pass
 
+	# write ann file
 	data = {'images': images_list,
 			'annotations': annotations_list,
 			'categories': categories_list
@@ -123,8 +145,6 @@ def test_export_misrefresh_to_coco():
 	with open(coco_file_name_full, 'w', encoding='utf-8') as f:
 		# json.dump(data, f, default=utils.convert_array_to_json, ensure_ascii=False, indent=4)
 		json.dump(data, f, ensure_ascii=False, indent=4)
-
-
 
 	pass
 

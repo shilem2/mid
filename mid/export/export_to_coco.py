@@ -5,14 +5,17 @@ def get_ann_categories():
 
 	categories = [
 		{'id': 1,
-		 'name': 'vert',
+		 'name': 'spine_xr',
 		 },
-		{'id': 2,
-		 'name': 'screw',
-		 },
-		{'id': 3,
-		 'name': 'rod',
-		 },
+		# {'id': 1,
+		#  'name': 'vert',
+		#  },
+		# {'id': 2,
+		#  'name': 'screw',
+		#  },
+		# {'id': 3,
+		#  'name': 'rod',
+		#  },
 	]
 
 	id2name = {}
