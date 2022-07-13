@@ -67,6 +67,12 @@ def test_export_misrefresh_to_coco():
 						'id': img_id,
 						'height': img.shape[0],
 						'width': img.shape[1],
+						'metadata': {'study_id': study_id,
+									 'projection': projection,
+									 'bodyPos': bodyPos,
+									 'acquired': acquired,
+									 # relative path ?
+									 }
 						}
 
 			images_list.append(img_dict)
@@ -76,16 +82,10 @@ def test_export_misrefresh_to_coco():
 			for key in keys:
 
 				if key.startswith(ann.vert_prefix):
-					# category_id = 1
-					# category_name = cat_id2name[category_id]
 					keypoints_row_index = 0
 				elif key.startswith(ann.screw_prefix):
-					# category_id = 2
-					# category_name = cat_id2name[category_id]
 					keypoints_row_index = 4
 				elif key.startswith(ann.rod_prefix):
-					# category_id = 3
-					# category_name = cat_id2name[category_id]
 					keypoints_row_index = 6
 				else:
 					continue
