@@ -103,10 +103,11 @@ def get_single_vert_anns(df, vert_name, units='pixel'):
 
     df = df[df.vertName == vert_name]
 
+    # if start is on the left-hand side, then ann format is [left_top, right_top, right_bottom, left_bottom]
     anns_colums = ['upperVertSt_x', 'upperVertSt_y',
                    'upperVertEnd_x', 'upperVertEnd_y',
-                   'lowerVertSt_x', 'lowerVertSt_y',
                    'lowerVertEnd_x', 'lowerVertEnd_y',
+                   'lowerVertSt_x', 'lowerVertSt_y',
                    ]
 
     # df = hack_fix_scientific_pixel_spacing(df)  # FIXME: hack for maccabi data, should fix earlier in the data pipe and remove from here in the future

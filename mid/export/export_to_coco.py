@@ -36,14 +36,25 @@ def keypoints2bbox(keypoints):
 	width = right - left
 	height = bottom - top
 
-	bbox = np.array([left, top, width, height])
+	bbox = np.array([left, top, width, height]).flatten().round(2).tolist()
 
 	return bbox
 
 def keypoints2segmentation(keypoints):
 	"""
-	keypoints: ndarray of shape (N, 2) where each row is (x, y) pair.
-	"""
+	Generate COCO format segmentation from a set of keypoints.
 
-	segmentation = np.concatenate((keypoints.flatten(), keypoints[0, :]))  # close polygon by first pair of coordinates
+	Parameters
+	----------
+    keypoints : ndarray
+        array of shape (N, 2) where each row is (x, y) pair.
+
+    Returns
+    -------
+    segmentation : list
+        Flattened list of coordinates given as [x0, y0, x1, y1, ...].
+        Coco segmentation format is list of lists, since segmentation of single object can be divided to several
+        polygons (e.g. due to occlusions).
+	"""
+	segmentation = [np.concatenate((keypoints.flatten(), keypoints[0, :])).tolist()]  # close polygon by first pair of coordinates
 	return segmentation

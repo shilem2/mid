@@ -23,9 +23,26 @@ def mmpose_coco_test():
 
 	pass
 
+def mid_coco_test():
+
+	labels_file = r"/Users/shilem2/OneDrive - Medtronic PLC/projects/mid/mid/tests/test_data/output/coco_dataset/coco_anns.json"
+	dataset_file = r"/Users/shilem2/OneDrive - Medtronic PLC/projects/mid/mid/tests/test_data/output/coco_dataset"  # folder
+
+	dataset = fo.Dataset.from_dir(
+		dataset_type=fo.types.COCODetectionDataset,
+		label_types=["detections", "segmentations", "keypoints"],
+		dataset_dir=dataset_file,
+		labels_path=labels_file)
+
+	session = fo.launch_app(dataset)
+
+	pass
+
+
 if __name__ == '__main__':
 
 	# fo_quickstart()
-	mmpose_coco_test()
+	# mmpose_coco_test()
+	mid_coco_test()
 
 	pass

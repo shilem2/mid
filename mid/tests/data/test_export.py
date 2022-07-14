@@ -27,7 +27,7 @@ def test_export_misrefresh_to_coco():
 	output_dir = test_data_path / 'output' / 'coco_dataset'
 	if output_dir.is_dir():
 		shutil.rmtree(output_dir)  # delete dir
-	images_dir = output_dir / 'images'
+	images_dir = output_dir / 'data'
 	images_dir.mkdir(parents=True, exist_ok=True)
 
 	# get study id list
@@ -95,16 +95,16 @@ def test_export_misrefresh_to_coco():
 				category_id = 1
 
 				keypoints = ann[key].round(2)
-				segmentation = keypoints2segmentation(keypoints).flatten().tolist()
-				bbox = keypoints2bbox(keypoints).flatten().round(2).tolist()
+				segmentation = keypoints2segmentation(keypoints)
+				bbox = keypoints2bbox(keypoints)
 				num_keypoints = keypoints.shape[0]
 				area = bbox[2] * bbox[3]
 
 				# define keypoints in coco_spine_xr format:
 				#    [[x_vert_upper_start, y_vert_upper_start, v],
 				#     [x_vert_upper_end, y_vert_upper_end, v],
-				#     [x_vert_lower_start, y_vert_lower_start, v],
 				#     [x_vert_lower_end, y_vert_lower_end, v],
+				#     [x_vert_lower_start, y_vert_lower_start, v],
 				#     [x_screw_start, y_screw_start, v],
 				#     [x_screw_end, y_screw_end, v],
 				#     [x_rod_start, y_rod_start, v],
@@ -112,6 +112,8 @@ def test_export_misrefresh_to_coco():
 				#    ]
 				#
 				# where v is visibility flag defined as v=0: not labeled (in which case x=y=0), v=1: labeled but not visible, and v=2: labeled and visible
+				#
+				# vert anns: if start is on the left-hand side, then ann format is [left_top, right_top, right_bottom, left_bottom]
 
 				keypoints_coco = np.zeros((8, 3))  #
 				keypoints = np.concatenate((keypoints, 2 * np.ones((keypoints.shape[0], 1))), axis=1)  # add visibility flag
