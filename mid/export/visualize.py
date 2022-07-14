@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import fiftyone as fo
 import fiftyone.zoo as foz
+
 
 def fo_quickstart():
 
@@ -25,8 +28,12 @@ def mmpose_coco_test():
 
 def mid_coco_test():
 
-	labels_file = r"/Users/shilem2/OneDrive - Medtronic PLC/projects/mid/mid/tests/test_data/output/coco_dataset/coco_anns.json"
-	dataset_file = r"/Users/shilem2/OneDrive - Medtronic PLC/projects/mid/mid/tests/test_data/output/coco_dataset"  # folder
+	# dataset_dir = '/Users/shilem2/OneDrive - Medtronic PLC/projects/mid/mid/tests/test_data/output/coco_dataset_12_images/'
+	dataset_dir = '/Users/shilem2/OneDrive - Medtronic PLC/projects/mid/mid/tests/test_data/output/coco_dataset_1_image/'
+
+	dataset_dir = Path(dataset_dir)
+	labels_file = dataset_dir / 'coco_anns.json'
+	dataset_file = dataset_dir
 
 	dataset = fo.Dataset.from_dir(
 		dataset_type=fo.types.COCODetectionDataset,
