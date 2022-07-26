@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import fiftyone as fo
@@ -28,17 +29,18 @@ def mmpose_coco_test():
 
 def mid_coco_test():
 
-	# dataset_dir = '/Users/shilem2/OneDrive - Medtronic PLC/projects/mid/mid/tests/test_data/output/coco_dataset_12_images/'
-	dataset_dir = '/Users/shilem2/OneDrive - Medtronic PLC/projects/mid/mid/tests/test_data/output/coco_dataset_1_image/'
+	mid_dir = Path(__file__).parents[2].resolve()
+	os.chdir(mid_dir)
 
-	dataset_dir = Path(dataset_dir)
+	dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only/'
+
+	dataset_dir = Path(dataset_dir).resolve()
 	labels_file = dataset_dir / 'coco_anns.json'
-	dataset_file = dataset_dir
 
 	dataset = fo.Dataset.from_dir(
 		dataset_type=fo.types.COCODetectionDataset,
 		label_types=["detections", "segmentations", "keypoints"],
-		dataset_dir=dataset_file,
+		dataset_dir=dataset_dir,
 		labels_path=labels_file)
 
 	session = fo.launch_app(dataset)

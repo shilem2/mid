@@ -42,6 +42,7 @@ class Annotation(MutableMapping):
         self.vert_prefix = ('C', 'T', 'L', 'S')
         self.rod_prefix = ('r',)
         self.screw_prefix = ('sc',)
+        self.implant_prefix = self.screw_prefix + self.rod_prefix
         self.icl_prefix = ('icl', )
         self.femur_prefix = ('f', )
         self.all_prefix = self.vert_prefix + self.rod_prefix + self.screw_prefix + self.icl_prefix + self.femur_prefix
@@ -216,7 +217,7 @@ class Annotation(MutableMapping):
         return x[:, ::-1]
 
     def get_keys(self, ktype):
-        assert ktype in ['vert', 'rod', 'screw', 'icl', 'femur', 'all']
+        assert ktype in ['vert', 'rod', 'screw', 'implant', 'icl', 'femur', 'all']
         keys_allowed = eval('self.{}_prefix'.format(ktype))
         keys = [key for key in self.keys() if key.startswith(keys_allowed)]
         return keys

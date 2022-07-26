@@ -15,6 +15,7 @@ pd.set_option('display.expand_frame_repr', False)
 
 def test_export_misrefresh_to_coco():
 
+	anns_type = 'implant'  # one of {'implant', 'all'}
 
 	# load dataset
 	test_data_path = Path(__file__).parents[1] / 'test_data'
@@ -78,7 +79,7 @@ def test_export_misrefresh_to_coco():
 			images_list.append(img_dict)
 
 			# annotations
-			keys = ann.get_keys('all')
+			keys = ann.get_keys(anns_type)
 			for key in keys:
 
 				if key.startswith(ann.vert_prefix):
