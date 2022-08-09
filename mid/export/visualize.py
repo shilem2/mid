@@ -32,7 +32,8 @@ def mid_coco_test():
 	mid_dir = Path(__file__).parents[2].resolve()
 	os.chdir(mid_dir)
 
-	dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only/'
+	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only/'
+	dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0/'
 
 	dataset_dir = Path(dataset_dir).resolve()
 	labels_file = dataset_dir / 'coco_anns.json'

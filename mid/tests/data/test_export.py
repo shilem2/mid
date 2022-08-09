@@ -15,7 +15,8 @@ pd.set_option('display.expand_frame_repr', False)
 
 def test_export_misrefresh_to_coco():
 
-	anns_type = 'implant'  # one of {'implant', 'all'}
+	anns_type = 'implant'  # one of {'implant', 'vert_implant'}
+	vert_visibility_flag = 0 if anns_type is 'implant' else 2
 
 	# load dataset
 	test_data_path = Path(__file__).parents[1] / 'test_data'
@@ -79,15 +80,19 @@ def test_export_misrefresh_to_coco():
 			images_list.append(img_dict)
 
 			# annotations
-			keys = ann.get_keys(anns_type)
+			# keys = ann.get_keys(anns_type)
+			keys = ann.get_keys('vert_implant')  # always get all vert and implant keys, but sometimes set vert visibility flag to 0
 			for key in keys:
 
 				if key.startswith(ann.vert_prefix):
 					keypoints_row_index = 0
+					visibility_flag = vert_visibility_flag
 				elif key.startswith(ann.screw_prefix):
 					keypoints_row_index = 4
+					visibility_flag = 2  # always visible
 				elif key.startswith(ann.rod_prefix):
 					keypoints_row_index = 6
+					visibility_flag = 2  # always visible
 				else:
 					continue
 
@@ -117,7 +122,7 @@ def test_export_misrefresh_to_coco():
 				# vert anns: if start is on the left-hand side, then ann format is [left_top, right_top, right_bottom, left_bottom]
 
 				keypoints_coco = np.zeros((8, 3))  #
-				keypoints = np.concatenate((keypoints, 2 * np.ones((keypoints.shape[0], 1))), axis=1)  # add visibility flag
+				keypoints = np.concatenate((keypoints, visibility_flag * np.ones((keypoints.shape[0], 1))), axis=1)  # add visibility flag
 				keypoints_coco[keypoints_row_index:(keypoints_row_index + keypoints.shape[0]), :] = keypoints
 				keypoints_coco = keypoints_coco.flatten().tolist()
 
