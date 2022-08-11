@@ -16,7 +16,7 @@ def load_anns_df(anns_dir):
 
     return anns_df
 
-def filter_anns_df(df, study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None):
+def filter_anns_df(df, study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, relative_file_path=None):
     """
     Filter annotations data frame.
     At least on of the arguments other than vert_df should be given.
@@ -28,6 +28,7 @@ def filter_anns_df(df, study_id=None, projection=None, body_pos=None, acquired=N
            ((body_pos is None) or (df.bodyPos == body_pos)) & \
            ((acquired is None) or (df.acquired == acquired)) & \
            ((acquired_date is None) or (df.acquired_date == acquired_date)) & \
+           ((relative_file_path is None) or (df.relative_file_path == relative_file_path)) & \
            ((file_id is None) or (df.file_id == file_id))
 
     df_out = df[inds]
@@ -473,7 +474,7 @@ def get_single_femur_anns(df, id, units='pixel'):
 
 
 def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_df=None, femur_df=None,
-                  study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, units='mm', pixel_spacing_override=None, display=False, save_fig_name=None):
+                  study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, relative_file_path=None, units='mm', pixel_spacing_override=None, display=False, save_fig_name=None):
     """
     Get scan annotations.
 
@@ -517,30 +518,30 @@ def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_d
     anns_icl = {}
     anns_femur = {}
     pixel_spacing_vert = pixel_spacing_rod = pixel_spacing_screw = pixel_spacing_icl = pixel_spacing_femur = None
-    dicom_path = None
+    # dicom_path = None
 
     if vert_df is not None:
-        vert_df = filter_anns_df(vert_df, study_id, projection, body_pos, acquired, acquired_date, file_id)
+        vert_df = filter_anns_df(vert_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
         anns_vert, pixel_spacing_vert, metadata_vert = get_all_vert_anns(vert_df, units)
 
     if rod_df is not None:
-        rod_df = filter_anns_df(rod_df, study_id, projection, body_pos, acquired, acquired_date, file_id)
+        rod_df = filter_anns_df(rod_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
         anns_rod, pixel_spacing_rod, metadata_rod = get_all_rod_anns(rod_df, units)
 
     if screw_df is not None:
-        screw_df = filter_anns_df(screw_df, study_id, projection, body_pos, acquired, acquired_date, file_id)
+        screw_df = filter_anns_df(screw_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
         anns_screw, pixel_spacing_screw, metadata_screw = get_all_screw_anns(screw_df, units)
 
     if icl_df is not None:
-        icl_df = filter_anns_df(icl_df, study_id, projection, body_pos, acquired, acquired_date, file_id)
+        icl_df = filter_anns_df(icl_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
         anns_icl, pixel_spacing_icl = get_all_icl_anns(icl_df, units)
 
     if femur_df is not None:
-        femur_df = filter_anns_df(femur_df, study_id, projection, body_pos, acquired, acquired_date, file_id)
+        femur_df = filter_anns_df(femur_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
         anns_femur, pixel_spacing_femur = get_all_femur_anns(femur_df, units)
 
     if dicom_df is not None:
-        dicom_df = filter_anns_df(dicom_df, study_id, projection, body_pos, acquired, acquired_date, file_id)
+        dicom_df = filter_anns_df(dicom_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
         assert len(dicom_df) == 1, 'only 1 dicom path should remain after filtering'
         dicom_path = dicom_df['dicom_path'].values[0]
 

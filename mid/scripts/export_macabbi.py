@@ -21,11 +21,11 @@ def export_maccabi_to_coco():
 
     # load dataset
     data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
-    vert_dir = (data_path / 'vert').resolve().as_posix()
-    rod_dir = (data_path / 'rod').resolve().as_posix()
-    screw_dir = (data_path / 'screw').resolve().as_posix()
-    dicom_dir = (data_path).resolve().as_posix()
-    ds = MaccbiDataset(vert_dir, rod_dir, screw_dir, dicom_dir)
+    vert_file = (data_path / 'vert' / 'vert.parquet').resolve().as_posix()
+    rod_file = (data_path / 'rod' / 'rod.parquet').resolve().as_posix()
+    screw_file = (data_path / 'screw' / 'screw.parquet').resolve().as_posix()
+    dicom_file = (data_path / 'dicom' / 'dicom.parquet').resolve().as_posix()
+    ds = MaccbiDataset(vert_file=vert_file, rod_file=rod_file, screw_file=screw_file, dicom_file=dicom_file)
 
     output_dir = data_path / 'output' / 'coco_dataset'
     if output_dir.is_dir():
@@ -42,7 +42,7 @@ def export_maccabi_to_coco():
     categories_list, cat_id2name, cat_name2id = get_ann_categories()
     img_id = 0
     ann_id = 0
-    for study_id in study_id_list:
+    for study_id in tqdm(study_id_list):
 
         # get all unique dicoms
         df = ds.filter_anns_df(ds.dataset['dicom_df'], study_id=study_id)
@@ -57,8 +57,9 @@ def export_maccabi_to_coco():
             projection = df_row['projection'].values[0]
             acquired = df_row['acquired'].values[0]
             bodyPos = df_row['bodyPos'].values[0]
+            relative_file_path = df_row['relative_file_path'].values[0]
 
-            ann = ds.get_ann(study_id=study_id, projection=projection, body_pos=bodyPos, acquired=acquired,
+            ann = ds.get_ann(study_id=study_id, projection=projection, body_pos=bodyPos, acquired=acquired, relative_file_path=relative_file_path,
                              units='pixel', display=False)
 
             # images

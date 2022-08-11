@@ -11,27 +11,26 @@ class MaccbiDataset(Dataset):
 
     def __init__(self,
                  cfg_update=None,
-                 # vert_dir='/Users/shilem2/data/mis_refresh/mis_refresh_2d_features_new_asc/vert_data/',
-                 # rod_dir='/Users/shilem2/data/mis_refresh/mis_refresh_2d_features_new_asc/rod_data/',
-                 # screw_dir='/Users/shilem2/data/mis_refresh/mis_refresh_2d_features_new_asc/screw_data/',
-                 # dicom_dir='/Users/shilem2/Library/CloudStorage/OneDrive-SharedLibraries-MedtronicPLC/Lev-Tov, Amir - Spine team data/Data/mis-refresh-raw-xr/',
-                 # vert_file='/Users/shilem2/data/maccabi/vert_data_raw.snappy.parquet',
-                 # pair_file='/Users/shilem2/data/maccabi/vert_angles_pairs.snappy.parquet',
-                 vert_file='/Users/shilem2/data/maccabi/2022-05-25_v2_generated_locally/vert/vert.parquet',
+                 vert_file=None,
                  pair_file=None,
-                 screw_file=None,  #'/Users/shilem2/data/maccabi/2022-05-08_merged_data_v2/vert/screw.parquet',
-                 rod_file=None,  #'/Users/shilem2/data/maccabi/2022-05-08_merged_data_v2/vert/rod.parquet',
-                 icl_file=None,  #'/Users/shilem2/data/maccabi/2022-05-08_merged_data_v2/vert/icl.parquet',
-                 femur_file=None,  #'/Users/shilem2/data/maccabi/2022-05-08_merged_data_v2/vert/femur.parquet',
+                 screw_file=None,
+                 rod_file=None,
+                 icl_file=None,
+                 femur_file=None,
+                 dicom_file=None,
                  ):
 
         #
+        if cfg_update is None:
+            cfg_update = dict()
+
         cfg_update.update({'vert_file': vert_file,
                            'pair_file': pair_file,
                            'screw_file': screw_file,
                            'rod_file': rod_file,
                            'icl_file': icl_file,
                            'femur_file': femur_file,
+                           'dicom_file': dicom_file
                            })
 
         # update config
@@ -45,6 +44,7 @@ class MaccbiDataset(Dataset):
         rod_df = pd.read_parquet(rod_file) if rod_file is not None else None
         icl_df = pd.read_parquet(icl_file) if icl_file is not None else None
         femur_df = pd.read_parquet(femur_file) if femur_file is not None else None
+        dicom_df = pd.read_parquet(dicom_file) if dicom_file is not None else None
 
         dataset = {'vert_df': vert_df,
                    'pair_df': pair_df,
@@ -52,7 +52,7 @@ class MaccbiDataset(Dataset):
                    'screw_df': screw_df,
                    'icl_df': icl_df,
                    'femur_df': femur_df,
-                   'dicom_df': None,  #dicom_df
+                   'dicom_df': dicom_df,
                    }
 
         self.cfg = cfg  # config is saved to file inside RegisterByKeypoints.__init__()
@@ -68,9 +68,9 @@ class MaccbiDataset(Dataset):
         s = sorted(self.dataset[key][col_name].unique())
         return s
 
-    def get_ann(self, study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, units='mm', display=False, save_fig_name=None):
+    def get_ann(self, study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, relative_file_path=None, units='mm', display=False, save_fig_name=None):
         ann = get_scan_anns(self.dataset['vert_df'], self.dataset['rod_df'], self.dataset['screw_df'], self.dataset['dicom_df'], self.dataset['icl_df'], self.dataset['femur_df'],
-                            study_id, projection, body_pos, acquired, acquired_date, file_id, units, self.cfg['pixel_spacing_override'], display, save_fig_name)
+                            study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path, units, self.cfg['pixel_spacing_override'], display, save_fig_name)
         return ann
 
     def filter_study_id(self, study_id, key='vert_df'):
@@ -152,10 +152,11 @@ class MaccbiDataset(Dataset):
         return s
 
     @staticmethod
-    def filter_anns_df(df, study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, equals=True):
+    def filter_anns_df(df, study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None,
+                       dicom_path=None, relative_file_path=None, file_id=None, equals=True):
         """
         Filter annotations data frame.
-        At least on of the arguments other than vert_df should be given.
+        At least on of the arguments other than df should be given.
         None value means that filtering does not consider that argument.
         """
 
@@ -165,6 +166,8 @@ class MaccbiDataset(Dataset):
                    ((body_pos is None) | (df.bodyPos == body_pos)) & \
                    ((acquired is None) | (df.acquired == acquired)) & \
                    ((acquired_date is None) | (df.acquired_date == acquired_date)) & \
+                   ((dicom_path is None) | (df.dicom_path == dicom_path)) & \
+                   ((relative_file_path is None) | (df.relative_file_path == relative_file_path)) & \
                    ((file_id is None) | (df.file_id == file_id))
         else:
             inds = ((study_id is None) | (df.StudyID != study_id)) & \
@@ -172,6 +175,8 @@ class MaccbiDataset(Dataset):
                    ((body_pos is None) | (df.bodyPos != body_pos)) & \
                    ((acquired is None) | (df.acquired != acquired)) & \
                    ((acquired_date is None) | (df.acquired_date != acquired_date)) & \
+                   ((dicom_path is None) | (df.dicom_path != dicom_path)) & \
+                   ((relative_file_path is None) | (df.relative_file_path != relative_file_path)) & \
                    ((file_id is None) | (df.file_id != file_id))
 
         df_out = df[inds]
