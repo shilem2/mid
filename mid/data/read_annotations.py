@@ -576,7 +576,7 @@ def verify_equal_or_None(*data):
 
     return True
 
-def get_dicom_paths(root_dir, json_pattern = '**/XR/**/*det.json', dicom_pattern='*.dcm'):
+def get_dicom_paths(root_dir, json_pattern='**/XR/**/*det.json', dicom_pattern='*.dcm'):
 
     # find jsons
     paths = Path(root_dir).rglob(json_pattern)
