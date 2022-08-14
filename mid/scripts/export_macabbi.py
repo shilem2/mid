@@ -45,18 +45,18 @@ def export_maccabi_to_coco():
     categories_list, cat_id2name, cat_name2id = get_ann_categories()
     img_id = 0
     ann_id = 0
-    try:
-        for n, study_id in tqdm(enumerate(study_id_list)):
+    for n, study_id in tqdm(enumerate(study_id_list)):
 
-            if (n_max_study_id > 0) and (n >= n_max_study_id):
-                break
+        if (n_max_study_id > 0) and (n >= n_max_study_id):
+            break
 
-            # get all unique dicoms
-            df = ds.filter_anns_df(ds.dataset['dicom_df'], study_id=study_id)
-            dicom_path_list = sorted(df['dicom_path'].unique())
+        # get all unique dicoms
+        df = ds.filter_anns_df(ds.dataset['dicom_df'], study_id=study_id)
+        dicom_path_list = sorted(df['dicom_path'].unique())
 
-            for dicom_path in dicom_path_list:
+        for dicom_path in dicom_path_list:
 
+            try:
                 img_id += 1
 
                 df_row = ds.filter_anns_df(ds.dataset['dicom_df'], dicom_path=dicom_path)
@@ -95,8 +95,6 @@ def export_maccabi_to_coco():
                                          # relative path ?
                                          }
                             }
-
-                images_list.append(img_dict)
 
                 # annotations
                 # keys = ann.get_keys(anns_type)
@@ -159,25 +157,36 @@ def export_maccabi_to_coco():
                                 'name': key,
                                 }
 
+                    # update output lists
+                    images_list.append(img_dict)
                     annotations_list.append(ann_dict)
 
-            pass
+                pass
 
-    except:
-        pass
+            except:
+                print('exception: skipping\n study_id: {}\n img_id: {}\n dicom_path: {}'.format(study_id, img_id, dicom_path))
+                pass
 
-    finally:
-        # write ann file
-        data = {'images': images_list,
-                'annotations': annotations_list,
-                'categories': categories_list
-                }
-        coco_file_name = 'coco_anns.json'
-        coco_file_name_full = output_dir / coco_file_name
+    print('\n')
+    print('----------------------------------')
+    print('Total # of exported')
+    print('study_ids: {}'.format(n))
+    print('images: {}'.format(img_id))
+    print('annotations: {}'.format(ann_id))
+    print('----------------------------------')
+    print('\n')
 
-        with open(coco_file_name_full, 'w', encoding='utf-8') as f:
-            # json.dump(data, f, default=utils.convert_array_to_json, ensure_ascii=False, indent=4)
-            json.dump(data, f, ensure_ascii=False, indent=4)
+    # write ann file
+    data = {'images': images_list,
+            'annotations': annotations_list,
+            'categories': categories_list
+            }
+    coco_file_name = 'coco_anns.json'
+    coco_file_name_full = output_dir / coco_file_name
+
+    with open(coco_file_name_full, 'w', encoding='utf-8') as f:
+        # json.dump(data, f, default=utils.convert_array_to_json, ensure_ascii=False, indent=4)
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
     pass
 
