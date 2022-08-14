@@ -3,7 +3,7 @@ from .dataset import Dataset
 from .misrefresh import MisRefreshDataset
 from .maccabi import MaccbiDataset
 from . import utils
-from .image_processing import adjust_dynamic_range
+from .image_processing import adjust_dynamic_range, simple_preprocssing
 
 __all__ = ['Annotation',
            'plot_annotations',
@@ -11,4 +11,6 @@ __all__ = ['Annotation',
            'MisRefreshDataset',
            'MaccbiDataset',
            'utils',
+           'adjust_dynamic_range',
+           'simple_preprocssing',
            ]

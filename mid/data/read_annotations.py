@@ -220,8 +220,11 @@ def get_single_screw_anns(df, id, units='pixel'):
 
     df = df[df.index == id]
 
-    id_col = ['screw_id']
-    ids = df[id_col].values[0][0]
+    try:  # misrefresh
+        id_col = ['screw_id']
+        ids = df[id_col].values[0][0]
+    except:  # maccabi
+        ids = id
 
     anns_colums = ['screwSt_x', 'screwSt_y', 'screwEnd_x', 'screwEnd_y']
     anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm
@@ -304,8 +307,11 @@ def get_single_rod_anns(df, id, units='pixel'):
 
     df = df[df.index == id]
 
-    id_col = ['rod_id']
-    ids = df[id_col].values[0][0]
+    try:  # misrefresh
+        id_col = ['rod_id']
+        ids = df[id_col].values[0][0]
+    except:  # maccabi
+        ids = id
 
     anns_colums = ['rodSt_x', 'rodSt_y', 'rodEnd_x', 'rodEnd_y']
     anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm

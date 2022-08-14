@@ -33,7 +33,8 @@ def mid_coco_test():
 	os.chdir(mid_dir)
 
 	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only/'
-	dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0/'
+	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0/'
+	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/output/coco_dataset_2_study_ids/'
 
 	dataset_dir = Path(dataset_dir).resolve()
 	labels_file = dataset_dir / 'coco_anns.json'

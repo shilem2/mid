@@ -16,7 +16,10 @@ def adjust_dynamic_range(img, vmin=0, vmax=255, dtype=np.float32, min_max_type='
         max_value = np.iinfo(img.dtype).max
         img_out *= vmax / max_value
 
-    img_out = img_out.round().astype(dtype)
+    if 'int' in str(dtype):
+        img_out = img_out.round()
+
+    img_out = img_out.astype(dtype)
 
     return img_out
 

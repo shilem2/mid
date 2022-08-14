@@ -5,7 +5,7 @@ import shutil
 import json
 from tqdm import tqdm
 
-from mid.data import MaccbiDataset, adjust_dynamic_range, utils
+from mid.data import MaccbiDataset, adjust_dynamic_range, simple_preprocssing
 from mid.export import get_ann_categories, keypoints2bbox, keypoints2segmentation
 
 import pandas as pd
@@ -18,6 +18,9 @@ def export_maccabi_to_coco():
 
     anns_type = 'implant'  # one of {'implant', 'vert_implant'}
     vert_visibility_flag = 0 if anns_type is 'implant' else 2
+    n_max_study_id = 2  # -1
+    # img_processing_type = 'adjust_dynamic_range'
+    img_processing_type = 'clahe1'
 
     # load dataset
     data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
@@ -42,7 +45,10 @@ def export_maccabi_to_coco():
     categories_list, cat_id2name, cat_name2id = get_ann_categories()
     img_id = 0
     ann_id = 0
-    for study_id in tqdm(study_id_list):
+    for n, study_id in tqdm(enumerate(study_id_list)):
+
+        if (n_max_study_id > 0) and (n >= n_max_study_id):
+            break
 
         # get all unique dicoms
         df = ds.filter_anns_df(ds.dataset['dicom_df'], study_id=study_id)
@@ -56,15 +62,24 @@ def export_maccabi_to_coco():
 
             projection = df_row['projection'].values[0]
             acquired = df_row['acquired'].values[0]
+            acquired_date = df_row['acquired_date'].values[0]
             bodyPos = df_row['bodyPos'].values[0]
             relative_file_path = df_row['relative_file_path'].values[0]
 
-            ann = ds.get_ann(study_id=study_id, projection=projection, body_pos=bodyPos, acquired=acquired, relative_file_path=relative_file_path,
+            ann = ds.get_ann(study_id=study_id, projection=projection, body_pos=bodyPos, acquired=acquired,
+                             acquired_date=acquired_date, relative_file_path=relative_file_path,
                              units='pixel', display=False)
 
             # images
             img = ann.load_dicom()
-            img = adjust_dynamic_range(img, vmax=255, dtype=np.uint8, min_max_type='img')  # TODO: maybe pass?
+            if img_processing_type == 'adjust_dynamic_range':
+                img = adjust_dynamic_range(img, vmax=255, dtype=np.uint8, min_max_type='img')  # TODO: maybe pass?
+            elif img_processing_type == 'clahe1':
+                img = adjust_dynamic_range(img, vmax=1., dtype=np.float32, min_max_type='img')  # convert to float with range [0., 1.]
+                img = simple_preprocssing(img, process_type='clahe1', keep_input_dtype=True, display=False)
+                img = adjust_dynamic_range(img, vmax=255, dtype=np.uint8, min_max_type='img')  # convert to uint8 with range [0, 255]
+
+
             file_name = '{:09d}.jpg'.format(img_id)
             file_name_full = images_dir / file_name
             cv2.imwrite(file_name_full.resolve().as_posix(), img)
@@ -72,7 +87,7 @@ def export_maccabi_to_coco():
                         'id': img_id,
                         'height': img.shape[0],
                         'width': img.shape[1],
-                        'metadata': {'study_id': study_id,
+                        'metadata': {'study_id': int(study_id),
                                      'projection': projection,
                                      'bodyPos': bodyPos,
                                      'acquired': acquired,
