@@ -10,9 +10,10 @@ pd.set_option('display.expand_frame_repr', False)
 
 def generate_maccabi_df():
 
-    rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/short2full.json'
+    # rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/short2full.json'
+    rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/short2full_dcm.json'
     dicom_pattern = '*.dcm'
-    num_max = 100  #-1
+    num_max = -1
     output_df_file = Path(rel2full_path_file).parent / 'dicom_path_rel2full.parquet'
 
     text = Path(rel2full_path_file).read_text()
