@@ -30,7 +30,7 @@ def export_maccabi_to_coco():
     dicom_file = (data_path / 'dicom' / 'dicom.parquet').resolve().as_posix()
     ds = MaccbiDataset(vert_file=vert_file, rod_file=rod_file, screw_file=screw_file, dicom_file=dicom_file)
 
-    output_dir = data_path.parent /  'output' / data_path.name / 'coco_dataset'
+    output_dir = data_path.parent /  'output' / data_path.name / 'coco_dataset_all'
     if output_dir.is_dir():
         shutil.rmtree(output_dir)  # delete dir
     images_dir = output_dir / 'data'
@@ -45,7 +45,7 @@ def export_maccabi_to_coco():
     categories_list, cat_id2name, cat_name2id = get_ann_categories()
     img_id = 0
     ann_id = 0
-    for n, study_id in tqdm(enumerate(study_id_list)):
+    for n, study_id in tqdm(enumerate(study_id_list), total=len(study_id_list)):
 
         if (n_max_study_id > 0) and (n >= n_max_study_id):
             break
