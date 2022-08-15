@@ -18,9 +18,10 @@ def export_maccabi_to_coco():
 
     anns_type = 'implant'  # one of {'implant', 'vert_implant'}
     vert_visibility_flag = 0 if (anns_type == 'implant') else 2
-    n_max_study_id = -1
+    n_max_study_id = 1  #-1
     img_processing_type = 'adjust_dynamic_range'
     # img_processing_type = 'clahe1'
+    cfg_update = {'pixel_spacing_override': (1., 1.)}
 
     # load dataset
     data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
@@ -28,9 +29,9 @@ def export_maccabi_to_coco():
     rod_file = (data_path / 'rod' / 'rod.parquet').resolve().as_posix()
     screw_file = (data_path / 'screw' / 'screw.parquet').resolve().as_posix()
     dicom_file = (data_path / 'dicom' / 'dicom.parquet').resolve().as_posix()
-    ds = MaccbiDataset(vert_file=vert_file, rod_file=rod_file, screw_file=screw_file, dicom_file=dicom_file)
+    ds = MaccbiDataset(vert_file=vert_file, rod_file=rod_file, screw_file=screw_file, dicom_file=dicom_file, cfg_update=cfg_update)
 
-    output_dir = data_path.parent /  'output' / data_path.name / 'coco_dataset_all'
+    output_dir = data_path.parent /  'output' / data_path.name / 'coco_dataset'
     if output_dir.is_dir():
         shutil.rmtree(output_dir)  # delete dir
     images_dir = output_dir / 'data'
@@ -69,7 +70,7 @@ def export_maccabi_to_coco():
 
                 ann = ds.get_ann(study_id=study_id, projection=projection, body_pos=bodyPos, acquired=acquired,
                                  acquired_date=acquired_date, relative_file_path=relative_file_path,
-                                 units='pixel', display=False)
+                                 units='mm', display=False)  # for maccabi data should use units 'mm' and pixel_space_override (1,1)
 
                 # images
                 img = ann.load_dicom()
