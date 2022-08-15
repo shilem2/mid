@@ -42,6 +42,8 @@ def export_maccabi_to_coco():
 
     n_max_str = 'all' if n_max_study_id == -1 else n_max_study_id
     output_dir_base_name = 'maccabi_{}_study_ids_{}_splits'.format(n_max_str, n_split_list)
+    if skip_flipped_anns:
+        output_dir_base_name += '_skip_lr_flip'
     output_dir_base = data_path.parent / 'output' / data_path.name / output_dir_base_name
     if output_dir_base.is_dir():
         shutil.rmtree(output_dir_base)  # delete dir
@@ -72,11 +74,17 @@ def export_maccabi_to_coco():
         pprint(summary_total)
         print('-------------------------------')
 
-        summary_file_name = 'summary.json'
+        # summary total
+        summary_file_name = 'summary_total.json'
         summary_file_name_full = output_dir_base / projection / summary_file_name
         with open(summary_file_name_full, 'w', encoding='utf-8') as f:
             json.dump(summary_total, f, ensure_ascii=False, indent=4)
 
+        # summary list
+        summary_file_name = 'summaries.json'
+        summary_file_name_full = output_dir_base / projection / summary_file_name
+        with open(summary_file_name_full, 'w', encoding='utf-8') as f:
+            json.dump(summary_list, f, ensure_ascii=False, indent=4)
 
     pass
 
