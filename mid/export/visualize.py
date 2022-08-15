@@ -34,7 +34,10 @@ def mid_coco_test():
 
 	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only/'
 	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0/'
-	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/output/coco_dataset_2_study_ids/'
+	# dataset_dir = '/home/shilem2/implant_detection/mid/mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0'
+	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_fixed_11_images/'
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_5_study_ids_70_images/'
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_1_study_id_filter_flipped/'
 
 	dataset_dir = Path(dataset_dir).resolve()
 	labels_file = dataset_dir / 'coco_anns.json'
@@ -47,6 +50,59 @@ def mid_coco_test():
 
 	session = fo.launch_app(dataset)
 
+	session.wait()
+
+	pass
+
+
+def mid_coco_tag_dataset():
+
+	mid_dir = Path(__file__).parents[2].resolve()
+	os.chdir(mid_dir)
+
+	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only/'
+	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0/'
+	# dataset_dir = '/home/shilem2/implant_detection/mid/mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0'
+	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_fixed_11_images/'
+	# dataset_dir = '/mnt/magicdat_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_5_study_ids_70_images/'
+
+	dataset_name = Path(dataset_dir).name
+
+	dataset_dir = Path(dataset_dir).resolve()
+	labels_file = dataset_dir / 'coco_anns.json'
+
+	if dataset_name in fo.list_datasets():
+		dataset = fo.load_dataset(dataset_name)
+	else:
+		dataset = fo.Dataset.from_dir(
+			dataset_type=fo.types.COCODetectionDataset,
+			label_types=["detections", "segmentations", "keypoints"],
+			dataset_dir=dataset_dir,
+			labels_path=labels_file,
+			name=dataset_name,
+		)
+
+		dataset.persistent = True
+
+	session = fo.launch_app(dataset)
+
+	# select images to filter on the app
+	filter_ids = session.selected
+
+	view_to_filter = dataset[filter_ids]
+
+	for sample in view_to_filter:
+		sample.tags.append('flip_lr')
+		sample.save()
+
+	export_dir = dataset_dir.as_posix() + '_tag_flip'
+	dataset.export(
+		export_dir=export_dir,
+		dataset_type=fo.types.COCODetectionDataset,
+	)
+
+	session.wait()
+
 	pass
 
 
@@ -55,5 +111,6 @@ if __name__ == '__main__':
 	# fo_quickstart()
 	# mmpose_coco_test()
 	mid_coco_test()
+	# mid_coco_tag_dataset()
 
 	pass

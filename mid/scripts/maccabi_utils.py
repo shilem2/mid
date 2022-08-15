@@ -8,7 +8,7 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.expand_frame_repr', False)
 
 
-def generate_maccabi_df():
+def generate_maccabi_dicom_df():
 
     rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/short2full.json'
     # rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/short2full_dcm.json'
@@ -46,7 +46,7 @@ def generate_maccabi_df():
 
     pass
 
-def add_fields_maccabi_df():
+def add_fields_maccabi_dicom_df():
 
     dicom_path = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/dicom_path_rel2full.parquet'
     vert_path = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/vert/vert.parquet'
@@ -54,7 +54,7 @@ def add_fields_maccabi_df():
     dicom_df = pd.read_parquet(dicom_path)
     vert_df = pd.read_parquet(vert_path)
 
-    wanted_columns = ['StudyID', 'acquired', 'acquired_date', 'projection', 'bodyPos', 'file_id', 'relative_file_path', 'dcm_date']
+    wanted_columns = ['StudyID', 'acquired', 'acquired_date', 'projection', 'bodyPos', 'file_id', 'relative_file_path', 'dcm_date', 'x_sign']
     df = dicom_df.merge(vert_df[wanted_columns], on=['relative_file_path'])
     df = df.drop_duplicates(['relative_file_path'])
 
@@ -68,7 +68,7 @@ def add_fields_maccabi_df():
 
 if __name__ == '__main__':
 
-    generate_maccabi_df()
-    add_fields_maccabi_df()
+    generate_maccabi_dicom_df()
+    add_fields_maccabi_dicom_df()
 
     pass

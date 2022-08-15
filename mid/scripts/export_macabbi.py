@@ -22,6 +22,7 @@ def export_maccabi_to_coco():
     img_processing_type = 'adjust_dynamic_range'
     # img_processing_type = 'clahe1'
     cfg_update = {'pixel_spacing_override': (1., 1.)}
+    skip_flipped_anns = True  # some of the annotations are horizontally flipped
 
     # load dataset
     data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
@@ -30,6 +31,8 @@ def export_maccabi_to_coco():
     screw_file = (data_path / 'screw' / 'screw.parquet').resolve().as_posix()
     dicom_file = (data_path / 'dicom' / 'dicom.parquet').resolve().as_posix()
     ds = MaccbiDataset(vert_file=vert_file, rod_file=rod_file, screw_file=screw_file, dicom_file=dicom_file, cfg_update=cfg_update)
+
+    skip_flipped_anns = skip_flipped_anns and ('x_sign' in ds.dataset['dicom_df'].columns)  # use skip flag only if dicom_df has 'x_sign' columns
 
     output_dir = data_path.parent /  'output' / data_path.name / 'coco_dataset'
     if output_dir.is_dir():
@@ -58,9 +61,14 @@ def export_maccabi_to_coco():
         for dicom_path in dicom_path_list:
 
             try:
-                img_id += 1
+
 
                 df_row = ds.filter_anns_df(ds.dataset['dicom_df'], dicom_path=dicom_path)
+
+                if skip_flipped_anns and (df_row['x_sign'].values[0] == -1):  # skip flipped anns
+                    continue
+
+                img_id += 1
 
                 projection = df_row['projection'].values[0]
                 acquired = df_row['acquired'].values[0]
