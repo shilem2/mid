@@ -4,6 +4,7 @@ import cv2
 import shutil
 import json
 from tqdm import tqdm
+from pprint import pprint
 
 from mid.data import MaccbiDataset, adjust_dynamic_range, simple_preprocssing
 from mid.export import get_ann_categories, keypoints2bbox, keypoints2segmentation
@@ -13,20 +14,21 @@ import pandas as pd
 pd.set_option('display.max_columns', None)
 pd.set_option('display.expand_frame_repr', False)
 
+import SimpleITK as sitk
+sitk.ProcessObject_SetGlobalWarningDisplay(False)
+
 
 def export_maccabi_to_coco():
 
     anns_type = 'implant'  # one of {'implant', 'vert_implant'}
     vert_visibility_flag = 0 if (anns_type == 'implant') else 2
-    n_max_study_id = 2  #-1
+    n_max_study_id = 10  #-1
     img_processing_type = 'adjust_dynamic_range'
     # img_processing_type = 'clahe1'
     cfg_update = {'pixel_spacing_override': (1., 1.)}
     skip_flipped_anns = True  # some of the annotations are horizontally flipped
     projection_list = ['LT', 'AP']
-
-    n_max_str = 'all' if n_max_study_id == -1 else n_max_study_id
-    output_dir_base_name = 'maccabi_{}_study_ids'.format(n_max_str)
+    n_split_list = 9
 
     # load dataset
     data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
@@ -38,17 +40,71 @@ def export_maccabi_to_coco():
 
     skip_flipped_anns = skip_flipped_anns and ('x_sign' in ds.dataset['dicom_df'].columns)  # use skip flag only if dicom_df has 'x_sign' columns
 
+    n_max_str = 'all' if n_max_study_id == -1 else n_max_study_id
+    output_dir_base_name = 'maccabi_{}_study_ids_{}_splits'.format(n_max_str, n_split_list)
+    output_dir_base = data_path.parent / 'output' / data_path.name / output_dir_base_name
+    if output_dir_base.is_dir():
+        shutil.rmtree(output_dir_base)  # delete dir
 
     # get study id list
-    study_id_list = ds.get_study_id_list(key='dicom_df', col_name='StudyID')
+    study_id_list_all = ds.get_study_id_list(key='dicom_df', col_name='StudyID')
+
+    if (n_max_study_id > 0) and (n_max_study_id < len(study_id_list_all)):
+        study_id_list_all = study_id_list_all[:n_max_study_id]
+
+    if n_split_list > 0:
+        study_id_list_of_lists = split_list(study_id_list_all, n_split_list, shuffle=False)
+    else:
+        study_id_list_of_lists = [study_id_list_all]
 
     for projection in projection_list:
-        output_dir = data_path.parent / 'output' / data_path.name / output_dir_base_name / projection
-        export_study_id_list(ds, study_id_list, output_dir, projection, n_max_study_id, skip_flipped_anns, img_processing_type, vert_visibility_flag)
+        summary_list = []
+        for n, study_id_list in enumerate(study_id_list_of_lists):
+            study_id_list_str = '{}_{}_study_ids'.format(n, len(study_id_list))
+            output_dir = output_dir_base / projection / study_id_list_str
+            summary = export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped_anns, img_processing_type, vert_visibility_flag)
+            summary_list.append(summary)
+
+        summary_total = process_summaries(summary_list)
+
+        print('-------------------------------')
+        print('{} Summary:'.format(projection))
+        pprint(summary_total)
+        print('-------------------------------')
+
+        summary_file_name = 'summary.json'
+        summary_file_name_full = output_dir_base / projection / summary_file_name
+        with open(summary_file_name_full, 'w', encoding='utf-8') as f:
+            json.dump(summary_total, f, ensure_ascii=False, indent=4)
+
 
     pass
 
-def export_study_id_list(ds, study_id_list, output_dir, projection, n_max=-1, skip_flipped_anns=True, img_processing_type='adjust_dynamic_range', vert_visibility_flag=0):
+def process_summaries(summary_list):
+
+    summary_total = {}
+    for summary in summary_list:
+        for key, val in summary.items():
+            if isinstance(val, int):
+                if key not in summary_total.keys():
+                    summary_total[key] = val
+                else:
+                    summary_total[key] += val
+
+    return summary_total
+
+
+def split_list(list_in, n, shuffle=False):
+
+    if shuffle:
+        np.random.shuffle(list_in)  # shuffle inplace
+
+    list_out = np.array_split(list_in, n)
+    list_out = [l.tolist() for l in list_out if len(l) > 0]
+
+    return list_out
+
+def export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped_anns=True, img_processing_type='adjust_dynamic_range', vert_visibility_flag=0):
 
     if output_dir.is_dir():
         shutil.rmtree(output_dir)  # delete dir
@@ -61,10 +117,10 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, n_max=-1, sk
     categories_list, cat_id2name, cat_name2id = get_ann_categories()
     img_id = 0
     ann_id = 0
+    ann_vert_counter = 0
+    ann_screw_counter = 0
+    ann_rod_counter = 0
     for n, study_id in tqdm(enumerate(study_id_list), total=len(study_id_list)):
-
-        if (n_max > 0) and (n >= n_max):
-            break
 
         # get all unique dicoms
         df = ds.filter_anns_df(ds.dataset['dicom_df'], study_id=study_id, projection=projection)
@@ -100,7 +156,6 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, n_max=-1, sk
                     img = simple_preprocssing(img, process_type='clahe1', keep_input_dtype=True, display=False)
                     img = adjust_dynamic_range(img, vmax=255, dtype=np.uint8, min_max_type='img')  # convert to uint8 with range [0, 255]
 
-
                 file_name = '{:09d}.jpg'.format(img_id)
                 file_name_full = images_dir / file_name
                 cv2.imwrite(file_name_full.resolve().as_posix(), img)
@@ -125,12 +180,15 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, n_max=-1, sk
                     if key.startswith(ann.vert_prefix):
                         keypoints_row_index = 0
                         visibility_flag = vert_visibility_flag
+                        ann_vert_counter += 1
                     elif key.startswith(ann.screw_prefix):
                         keypoints_row_index = 4
                         visibility_flag = 2  # always visible
+                        ann_screw_counter += 1
                     elif key.startswith(ann.rod_prefix):
                         keypoints_row_index = 6
                         visibility_flag = 2  # always visible
+                        ann_rod_counter += 1
                     else:
                         continue
 
@@ -187,15 +245,27 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, n_max=-1, sk
                 print('exception: skipping\n study_id: {}\n img_id: {}\n dicom_path: {}'.format(study_id, img_id, dicom_path))
                 pass
 
+    summary_dict = {'output_dir': output_dir.as_posix(),
+                    'projection': projection,
+                    'study_ids': n + 1,  # +1 since enumerate starts at 0
+                    'images': img_id,
+                    'annotations': ann_id,
+                    'anns_vert': ann_vert_counter,
+                    'anns_screw': ann_screw_counter,
+                    'anns_rod': ann_rod_counter,
+                    }
+
     print('\n')
     print('----------------------------------')
-    print('output_dir: {}'.format(output_dir))
-    print('Total # of exported')
-    print('study_ids: {}'.format(n))
-    print('images: {}'.format(img_id))
-    print('annotations: {}'.format(ann_id))
+    print('Export Summary:')
+    pprint(summary_dict)
     print('----------------------------------')
     print('\n')
+
+    summary_file_name = 'summary.json'
+    summary_file_name_full = output_dir / summary_file_name
+    with open(summary_file_name_full, 'w', encoding='utf-8') as f:
+        json.dump(summary_dict, f, ensure_ascii=False, indent=4)
 
     # write ann file
     data = {'images': images_list,
@@ -208,6 +278,10 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, n_max=-1, sk
     with open(coco_file_name_full, 'w', encoding='utf-8') as f:
         # json.dump(data, f, default=utils.convert_array_to_json, ensure_ascii=False, indent=4)
         json.dump(data, f, ensure_ascii=False, indent=4)
+
+    pass
+
+    return summary_dict
 
 
 

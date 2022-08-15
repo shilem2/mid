@@ -35,9 +35,10 @@ def mid_coco_test():
 	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only/'
 	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0/'
 	# dataset_dir = '/home/shilem2/implant_detection/mid/mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0'
-	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_fixed_11_images/'
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_fixed_11_images/'
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_5_study_ids_70_images/'
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_1_study_id_filter_flipped/'
+	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_20_study_ids/LT/0_3_study_ids/'
 
 	dataset_dir = Path(dataset_dir).resolve()
 	labels_file = dataset_dir / 'coco_anns.json'
