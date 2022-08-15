@@ -22,7 +22,7 @@ def export_maccabi_to_coco():
 
     anns_type = 'implant'  # one of {'implant', 'vert_implant'}
     vert_visibility_flag = 0 if (anns_type == 'implant') else 2
-    n_max_study_id = 10  #-1
+    n_max_study_id = -1
     img_processing_type = 'adjust_dynamic_range'
     # img_processing_type = 'clahe1'
     cfg_update = {'pixel_spacing_override': (1., 1.)}
