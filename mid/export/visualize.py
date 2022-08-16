@@ -38,7 +38,8 @@ def mid_coco_test():
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_fixed_11_images/'
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_5_study_ids_70_images/'
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_1_study_id_filter_flipped/'
-	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_all_study_ids_9_splits/LT/0_101_study_ids/'
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_all_study_ids_9_splits_skip_lr_flip/LT/0_101_study_ids/'
+	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_6_study_ids_1_splits_skip_lr_flip/AP/0_6_study_ids/'
 
 	dataset_dir = Path(dataset_dir).resolve()
 	labels_file = dataset_dir / 'coco_anns.json'
@@ -64,13 +65,19 @@ def mid_coco_tag_dataset():
 	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only/'
 	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0/'
 	# dataset_dir = '/home/shilem2/implant_detection/mid/mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0'
-	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_fixed_11_images/'
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_fixed_11_images/'
 	# dataset_dir = '/mnt/magicdat_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_5_study_ids_70_images/'
+	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_6_study_ids_1_splits_skip_lr_flip/LT/0_6_study_ids/'
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_6_study_ids_1_splits_skip_lr_flip/AP/0_6_study_ids/'
 
-	dataset_name = Path(dataset_dir).name
+	# dataset_name = Path(dataset_dir).name
+	dataset_name = '.'.join(Path(dataset_dir).parts[len(Path(dataset_dir).parts)-4:])
 
 	dataset_dir = Path(dataset_dir).resolve()
 	labels_file = dataset_dir / 'coco_anns.json'
+
+	# fo.delete_dataset(dataset_name)  # delete current dataset_name
+	# [fo.delete_dataset(name) for name in fo.list_datasets()]  # delete all existing datasets
 
 	if dataset_name in fo.list_datasets():
 		dataset = fo.load_dataset(dataset_name)
@@ -113,5 +120,6 @@ if __name__ == '__main__':
 	# mmpose_coco_test()
 	mid_coco_test()
 	# mid_coco_tag_dataset()
+
 
 	pass

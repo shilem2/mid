@@ -36,6 +36,12 @@ def keypoints2bbox(keypoints):
 	width = right - left
 	height = bottom - top
 
+	# enforce minimal values
+	left = np.maximum(left, 0.)
+	top = np.maximum(top, 0.)
+	width = np.maximum(width, 1.)
+	height = np.maximum(height, 1.)
+
 	bbox = np.array([left, top, width, height]).flatten().round(2).tolist()
 
 	return bbox

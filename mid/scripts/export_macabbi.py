@@ -54,7 +54,7 @@ def export_maccabi_to_coco():
     if (n_max_study_id > 0) and (n_max_study_id < len(study_id_list_all)):
         study_id_list_all = study_id_list_all[:n_max_study_id]
 
-    if n_split_list > 0:
+    if n_split_list > 1:
         study_id_list_of_lists = split_list(study_id_list_all, n_split_list, shuffle=False)
     else:
         study_id_list_of_lists = [study_id_list_all]
@@ -175,9 +175,13 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped
                                          'projection': projection,
                                          'bodyPos': bodyPos,
                                          'acquired': acquired,
-                                         # relative path ?
+                                         'acquired_date': acquired_date,
+                                         'relative path': relative_file_path,
+                                         'full_path': dicom_path,
                                          }
                             }
+
+                images_list.append(img_dict)
 
                 # annotations
                 # keys = ann.get_keys(anns_type)
@@ -226,8 +230,7 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped
                     # vert anns: if start is on the left-hand side, then ann format is [left_top, right_top, right_bottom, left_bottom]
 
                     keypoints_coco = np.zeros((8, 3))  #
-                    keypoints = np.concatenate((keypoints, visibility_flag * np.ones((keypoints.shape[0], 1))),
-                                               axis=1)  # add visibility flag
+                    keypoints = np.concatenate((keypoints, visibility_flag * np.ones((keypoints.shape[0], 1))), axis=1)  # add visibility flag
                     keypoints_coco[keypoints_row_index:(keypoints_row_index + keypoints.shape[0]), :] = keypoints
                     keypoints_coco = keypoints_coco.flatten().tolist()
 
@@ -244,7 +247,6 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped
                                 }
 
                     # update output lists
-                    images_list.append(img_dict)
                     annotations_list.append(ann_dict)
 
                 pass
@@ -292,9 +294,37 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped
     return summary_dict
 
 
+def visualize_single_example():
+
+    study_id = 21455
+    projection = 'AP'
+    bodyPos = 'Neutral'
+    acquired = '2009_10'
+    acquired_date = 'Month 12'
+    relative_file_path = '21455/XR/2009_10/AP/Neutral'
+
+    display = True
+
+    cfg_update = {'pixel_spacing_override': (1., 1.)}
+
+
+    data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
+    vert_file = (data_path / 'vert' / 'vert.parquet').resolve().as_posix()
+    rod_file = (data_path / 'rod' / 'rod.parquet').resolve().as_posix()
+    screw_file = (data_path / 'screw' / 'screw.parquet').resolve().as_posix()
+    dicom_file = (data_path / 'dicom' / 'dicom.parquet').resolve().as_posix()
+    ds = MaccbiDataset(vert_file=vert_file, rod_file=rod_file, screw_file=screw_file, dicom_file=dicom_file, cfg_update=cfg_update)
+
+    ann = ds.get_ann(study_id=study_id, projection=projection, body_pos=bodyPos, acquired=acquired,
+                     acquired_date=acquired_date, relative_file_path=relative_file_path,
+                     units='mm', display=display)  # for maccabi data should use units 'mm' and pixel_space_override (1,1)
+
+    pass
+
 
 if __name__ == '__main__':
 
     export_maccabi_to_coco()
+    # visualize_single_example()
 
     pass
