@@ -20,7 +20,7 @@ sitk.ProcessObject_SetGlobalWarningDisplay(False)
 
 def export_maccabi_to_coco():
 
-    anns_type = 'implant'  # one of {'implant', 'vert_implant'}
+    anns_type = 'vert_implant'  #'implant'  # one of {'implant', 'vert_implant'}
     vert_visibility_flag = 0 if (anns_type == 'implant') else 2
     n_max_study_id = -1
     img_processing_type = 'adjust_dynamic_range'
@@ -29,6 +29,9 @@ def export_maccabi_to_coco():
     skip_flipped_anns = True  # some of the annotations are horizontally flipped
     projection_list = ['LT', 'AP']
     n_split_list = 9
+
+    output_dir_prefix = '001_'  # ''
+    output_dir_suffix = '_with_verts'  # ''
 
     # load dataset
     data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
@@ -41,7 +44,7 @@ def export_maccabi_to_coco():
     skip_flipped_anns = skip_flipped_anns and ('x_sign' in ds.dataset['dicom_df'].columns)  # use skip flag only if dicom_df has 'x_sign' columns
 
     n_max_str = 'all' if n_max_study_id == -1 else n_max_study_id
-    output_dir_base_name = 'maccabi_{}_study_ids_{}_splits'.format(n_max_str, n_split_list)
+    output_dir_base_name = '{}maccabi_{}_study_ids_{}_splits{}'.format(output_dir_prefix, n_max_str, n_split_list, output_dir_suffix)
     if skip_flipped_anns:
         output_dir_base_name += '_skip_lr_flip'
     output_dir_base = data_path.parent / 'output' / data_path.name / output_dir_base_name
