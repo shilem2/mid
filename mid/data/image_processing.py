@@ -94,7 +94,7 @@ def simple_preprocssing(img, process_type, keep_input_dtype=True, display=False)
         img_out = exposure.equalize_adapthist(img, kernel_size=140, clip_limit=0.03, nbins=256)
 
     if keep_input_dtype:
-        img_out = adjust_dynamic_range(img, vmin=img.min(), vmax=img.max(), dtype=img.dtype)
+        img_out = adjust_dynamic_range(img_out, vmin=img_out.min(), vmax=img_out.max(), dtype=img.dtype)
 
     if display:
         fig, axes = plt.subplots(nrows=1, ncols=2,
