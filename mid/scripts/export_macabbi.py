@@ -23,8 +23,8 @@ def export_maccabi_to_coco():
     anns_type = 'vert_implant'  #'implant'  # one of {'implant', 'vert_implant'}
     vert_visibility_flag = 0 if (anns_type == 'implant') else 2
     n_max_study_id = -1
-    # img_processing_type = 'adjust_dynamic_range'
-    img_processing_type = 'clahe1'
+    img_processing_type = 'adjust_dynamic_range'
+    # img_processing_type = 'clahe1'
     cfg_update = {'pixel_spacing_override': (1., 1.)}
     skip_flipped_anns = True  # some of the annotations are horizontally flipped
     projection_list = ['LT', 'AP']
@@ -36,9 +36,12 @@ def export_maccabi_to_coco():
     # 002
     # output_dir_prefix = '002_'  # ''
     # output_dir_suffix = '_clahe1'  # ''
-    # 002
-    output_dir_prefix = '003_'  # ''
-    output_dir_suffix = '_clahe1_with_verts'  # ''
+    # 003
+    # output_dir_prefix = '003_'  # ''
+    # output_dir_suffix = '_clahe1_with_verts'  # ''
+    # 004
+    output_dir_prefix = '004_'  # ''
+    output_dir_suffix = '_with_verts_and_pixel_spacing'  # ''
 
     # load dataset
     data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
@@ -177,6 +180,7 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped
                 file_name = '{:09d}.jpg'.format(img_id)
                 file_name_full = images_dir / file_name
                 cv2.imwrite(file_name_full.resolve().as_posix(), img)
+                pixel_spacing = ann.metadata['pixel_spacing_orig'] if 'pixel_spacing_orig' in ann.metadata else ann.pixel_spacing
                 img_dict = {'file_name': file_name,
                             'id': img_id,
                             'height': img.shape[0],
@@ -188,6 +192,7 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped
                                          'acquired_date': acquired_date,
                                          'relative path': relative_file_path,
                                          'full_path': dicom_path,
+                                         'pixel_spacing': pixel_spacing.tolist(),
                                          }
                             }
 
@@ -195,8 +200,7 @@ def export_study_id_list(ds, study_id_list, output_dir, projection, skip_flipped
 
                 # annotations
                 # keys = ann.get_keys(anns_type)
-                keys = ann.get_keys(
-                    'vert_implant')  # always get all vert and implant keys, but sometimes set vert visibility flag to 0
+                keys = ann.get_keys('vert_implant')  # always get all vert and implant keys, but sometimes set vert visibility flag to 0
                 for key in keys:
 
                     if key.startswith(ann.vert_prefix):

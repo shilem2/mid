@@ -36,8 +36,9 @@ def mid_coco_test():
 	# dataset_dir = 'mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0/'
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_6_study_ids_1_splits_skip_lr_flip/AP/0_6_study_ids/'
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/000_maccabi_all_study_ids_9_splits_skip_lr_flip/LT/1_101_study_ids/'
-	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/001_maccabi_4_study_ids_2_splits_skip_lr_flip_add_verts_skip_lr_flip/LT/1_2_study_ids/'
-
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/001_maccabi_4_study_ids_2_splits_skip_lr_flip_add_verts_skip_lr_flip/LT/1_2_study_ids/'
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/002_maccabi_all_study_ids_9_splits_clahe1_skip_lr_flip/LT/0_101_study_ids/'
+	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/003_maccabi_all_study_ids_9_splits_clahe1_with_verts_skip_lr_flip/LT/0_101_study_ids/'
 
 	dataset_dir = Path(dataset_dir).resolve()
 	labels_file = dataset_dir / 'coco_anns.json'
