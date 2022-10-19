@@ -20,7 +20,7 @@ sitk.ProcessObject_SetGlobalWarningDisplay(False)
 
 def export_maccabi_to_coco():
 
-    anns_type = 'vert_implant'  #'implant'  # one of {'implant', 'vert_implant'}
+    anns_type = 'implant'  #'implant'  # one of {'implant', 'vert_implant'}
     vert_visibility_flag = 0 if (anns_type == 'implant') else 2
     n_max_study_id = -1
     img_processing_type = 'adjust_dynamic_range'
@@ -42,6 +42,9 @@ def export_maccabi_to_coco():
     # 004
     output_dir_prefix = '004_'  # ''
     output_dir_suffix = '_with_verts_and_pixel_spacing'  # ''
+    # 005
+    output_dir_prefix = '005_'  # ''
+    output_dir_suffix = '_implants_only_with_pixel_spacing'  # ''
 
     # load dataset
     data_path = Path('/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/')
