@@ -66,8 +66,9 @@ def mid_coco_tag_dataset():
 	# dataset_dir = '/home/shilem2/implant_detection/mid/mid/tests/test_data/output/coco_dataset_12_images_implants_only_verts_v_0'
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_fixed_11_images/'
 	# dataset_dir = '/mnt/magicdat_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/coco_dataset_5_study_ids_70_images/'
-	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_6_study_ids_1_splits_skip_lr_flip/LT/0_6_study_ids/'
+	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_6_study_ids_1_splits_skip_lr_flip/LT/0_6_study_ids/'
 	# dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/maccabi_6_study_ids_1_splits_skip_lr_flip/AP/0_6_study_ids/'
+	dataset_dir = '/mnt/magic_efs/moshe/implant_detection/data/output/2022-08-10_merged_data_v2/005_maccabi_all_study_ids_9_splits_implants_only_with_pixel_spacing_skip_lr_flip/LT//0_101_study_ids/'
 
 	# dataset_name = Path(dataset_dir).name
 	dataset_name = '.'.join(Path(dataset_dir).parts[len(Path(dataset_dir).parts)-4:])
@@ -117,8 +118,8 @@ if __name__ == '__main__':
 
 	# fo_quickstart()
 	# mmpose_coco_test()
-	mid_coco_test()
-	# mid_coco_tag_dataset()
+	# mid_coco_test()
+	mid_coco_tag_dataset()
 
 
 	pass
