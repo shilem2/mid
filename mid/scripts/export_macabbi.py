@@ -43,7 +43,9 @@ def export_maccabi_to_coco():
     output_dir_prefix = '004_'  # ''
     output_dir_suffix = '_with_verts_and_pixel_spacing'  # ''
     # 005
-    output_dir_prefix = '005_'  # ''
+    # output_dir_prefix = '005_'  # ''
+    # output_dir_suffix = '_implants_only_with_pixel_spacing'  # ''
+    output_dir_prefix = 'debug_005_'  # ''
     output_dir_suffix = '_implants_only_with_pixel_spacing'  # ''
 
     # load dataset

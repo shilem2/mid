@@ -1,5 +1,8 @@
 from collections.abc import MutableMapping
 from copy import deepcopy
+import matplotlib
+# matplotlib.use('Agg')
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
@@ -26,6 +29,21 @@ class Annotation(MutableMapping):
         If True, annotation will be displayed. dicom_path must be given for display.
     """
 
+    # members
+    vert_prefix = ('C', 'T', 'L', 'S')
+    rod_prefix = ('r',)
+    screw_prefix = ('sc',)
+    implant_prefix = screw_prefix + rod_prefix
+    icl_prefix = ('icl',)
+    femur_prefix = ('f',)
+    vert_implant_prefix = vert_prefix + implant_prefix
+    all_prefix = vert_prefix + rod_prefix + screw_prefix + icl_prefix + femur_prefix
+    vert_names = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+                  'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
+                  'L1', 'L2', 'L3', 'L4', 'L5', 'L6',
+                  'S1', 'S2', 'S3', 'S4', 'S5',
+                  ]
+
     def __init__(self, ann, pixel_spacing, units, dicom_path=None, metadata=None, display=False, save_fig_name=None):
 
         assert isinstance(ann, dict), 'ann_dict must be of type dict(), got type {}'.format(type(ann))
@@ -37,16 +55,6 @@ class Annotation(MutableMapping):
         self.units = units
         self.dicom_path = dicom_path
         self.metadata = metadata
-
-        # members
-        self.vert_prefix = ('C', 'T', 'L', 'S')
-        self.rod_prefix = ('r',)
-        self.screw_prefix = ('sc',)
-        self.implant_prefix = self.screw_prefix + self.rod_prefix
-        self.icl_prefix = ('icl', )
-        self.femur_prefix = ('f', )
-        self.vert_implant_prefix = self.vert_prefix + self.implant_prefix
-        self.all_prefix = self.vert_prefix + self.rod_prefix + self.screw_prefix + self.icl_prefix + self.femur_prefix
 
         if display or (save_fig_name is not None):
             self.plot_annotations(display=display, save_fig_name=save_fig_name)
@@ -243,11 +251,6 @@ class Annotation(MutableMapping):
     def sort_keys_by_vert_names(self, keys):
         """Sort keys by vertebrates names
         """
-        self.vert_names = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
-                           'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
-                           'L1', 'L2', 'L3', 'L4', 'L5', 'L6',
-                           'S1', 'S2', 'S3', 'S4', 'S5',
-                           ]
         indices_ordered = list(range(len(self.vert_names)))
         zipped_sorted_ind_vert = list(zip(indices_ordered, self.vert_names))
         indices = sorted([ind for (ind, key) in zipped_sorted_ind_vert if key in keys])  # indices of input keys

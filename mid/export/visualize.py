@@ -118,8 +118,8 @@ if __name__ == '__main__':
 
 	# fo_quickstart()
 	# mmpose_coco_test()
-	# mid_coco_test()
-	mid_coco_tag_dataset()
+	mid_coco_test()
+	# mid_coco_tag_dataset()
 
 
 	pass

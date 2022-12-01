@@ -58,6 +58,9 @@ class MaccbiDataset(Dataset):
         self.cfg = cfg  # config is saved to file inside RegisterByKeypoints.__init__()
         self.dataset = dataset
 
+        # members
+        self.acquired_dates = ['PreOp', 'PostOp', 'Week 3-6', 'Month 6', 'Month 12']  # used for sort
+
         pass
 
     def get_study_id_list(self, key='vert_df', col_name='StudyID'):
@@ -80,7 +83,6 @@ class MaccbiDataset(Dataset):
     def sort_acquired_dates(self, acquired_dates):
         """Sort acquired_dates chronologically.
         """
-        self.acquired_dates = ['PreOp', 'PostOp', 'Week 3-6', 'Month 6', 'Month 12']
         indices_ordered = list(range(len(self.acquired_dates)))
         zipped_sorted_ind_vert = list(zip(indices_ordered, self.acquired_dates))
         indices = sorted([ind for (ind, acquired_date) in zipped_sorted_ind_vert if acquired_date in acquired_dates])  # indices of input keys

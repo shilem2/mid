@@ -47,10 +47,10 @@ def test_load_all_anns():
     assert len(ann) == 7  #13
     assert ann.pixel_spacing == approx(np.array([1., 1.]))
     ann.change_units('mm')
-    assert ann['L1'] == approx(np.array([[886.5, 375.5],
-                                         [722.5, 438. ],
+    assert ann['L1'] == approx(np.array([[662.5, 310. ],
                                          [821.5, 237.5],
-                                         [662.5, 310. ]]))
+                                         [886.5, 375.5],
+                                         [722.5, 438. ]]))
 
     pass
 

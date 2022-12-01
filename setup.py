@@ -6,6 +6,6 @@ setup(
     # url='https://github.com/mypackage.git',
     author='Moshe Shilemay',
     author_email='moshe.shilemay@medtronic.com',
-    description='Medical images dataset utilty',
+    description='Medical images dataset utility',
     packages=['mid'],
 )
