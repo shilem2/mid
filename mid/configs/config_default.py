@@ -9,6 +9,7 @@ data = {'pixel_spacing_override': None,
         'femur_file': None,
         'dicom_file': None,
         'pairs_for_registration': {'acquired_date': 'different',
+                                   'skip_flipped_anns': False,
                                    'latest_preop': True}
         }
 

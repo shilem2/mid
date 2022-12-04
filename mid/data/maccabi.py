@@ -94,18 +94,20 @@ class MaccbiDataset(Dataset):
     def find_pairs_for_registration(self, study_id):
 
         if self.cfg['pairs_for_registration']['acquired_date'] == 'same':
-            study_pairs_df = self.find_pairs_same_acquired_date(study_id)
+            study_pairs_df = self.find_pairs_same_acquired_date(study_id, self.cfg['pairs_for_registration']['skip_flipped_anns'])
         elif self.cfg['pairs_for_registration']['acquired_date'] == 'different':
-            study_pairs_df = self.find_pairs_different_acquired_date(study_id, self.cfg['pairs_for_registration']['latest_preop'])
-
+            study_pairs_df = self.find_pairs_different_acquired_date(study_id, latest_preop=self.cfg['pairs_for_registration']['latest_preop'], skip_flipped_anns=self.cfg['pairs_for_registration']['skip_flipped_anns'])
         return study_pairs_df
 
-    def find_pairs_same_acquired_date(self, study_id):
+    def find_pairs_same_acquired_date(self, study_id, skip_flipped_anns=False):
         """Find pairs of same projection, body pose and acquired_date, acquired at different times for a specific study_id.
         """
 
         study_df = self.filter_study_id(study_id)
         df = study_df.drop_duplicates('file_id')
+        if skip_flipped_anns:
+            inds = df.x_sign != -1
+            df = df[inds]
         df = df[['file_id', 'StudyID', 'projection', 'acquired_date', 'bodyPos', 'acquired']]  # use only most important columns
 
         acquired_date_list = self.get_unique_val_list(df, 'acquired_date')
@@ -122,15 +124,18 @@ class MaccbiDataset(Dataset):
 
         return study_pairs_df
 
-    def find_pairs_different_acquired_date(self, study_id, latest_preop=True, preop_must=True):
+    def find_pairs_different_acquired_date(self, study_id, latest_preop=True, preop_must=True, skip_flipped_anns=False):
         """Find pairs of same projection and body pose, and different acquired_date, for a specific study_id.
         """
 
-        study_df = self.filter_study_id(study_id)
+        study_df = self.filter_study_id(study_id, key='dicom_df')
         df = study_df.drop_duplicates('file_id')
+        if skip_flipped_anns:
+            inds = df.x_sign != -1
+            df = df[inds]
         if latest_preop:
             df = keep_latest_preop(df, groupCols=['StudyID', 'acquired_date', 'projection', 'bodyPos'], sortCols=['StudyID', 'dcm_date', 'projection', 'bodyPos'], verbose=False)
-        df = df[['file_id', 'StudyID', 'projection', 'acquired_date', 'bodyPos', 'acquired']]  # use only most important columns
+        df = df[['file_id', 'StudyID', 'projection', 'acquired_date', 'bodyPos', 'acquired', 'relative_file_path', 'dicom_path', 'x_sign']]  # use only most important columns
 
         acquired_date_list = self.sort_acquired_dates(self.get_unique_val_list(df, 'acquired_date'))
 
