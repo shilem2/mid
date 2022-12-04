@@ -76,8 +76,8 @@ class MaccbiDataset(Dataset):
                             study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path, units, self.cfg['pixel_spacing_override'], display, save_fig_name)
         return ann
 
-    def filter_study_id(self, study_id, key='vert_df'):
-        df = filter_anns_df(self.dataset[key], study_id=study_id)
+    def filter_study_id(self, study_id, key='vert_df', projection=None, body_pose=None):
+        df = filter_anns_df(self.dataset[key], study_id=study_id, projection=projection, body_pos=body_pose)
         return df
 
     def sort_acquired_dates(self, acquired_dates):
@@ -94,16 +94,16 @@ class MaccbiDataset(Dataset):
     def find_pairs_for_registration(self, study_id):
 
         if self.cfg['pairs_for_registration']['acquired_date'] == 'same':
-            study_pairs_df = self.find_pairs_same_acquired_date(study_id, self.cfg['pairs_for_registration']['skip_flipped_anns'])
+            study_pairs_df = self.find_pairs_same_acquired_date(study_id, self.cfg['pairs_for_registration']['skip_flipped_anns'], self.cfg['pairs_for_registration']['projection'], self.cfg['pairs_for_registration']['body_pose'])
         elif self.cfg['pairs_for_registration']['acquired_date'] == 'different':
-            study_pairs_df = self.find_pairs_different_acquired_date(study_id, latest_preop=self.cfg['pairs_for_registration']['latest_preop'], skip_flipped_anns=self.cfg['pairs_for_registration']['skip_flipped_anns'])
+            study_pairs_df = self.find_pairs_different_acquired_date(study_id, latest_preop=self.cfg['pairs_for_registration']['latest_preop'], skip_flipped_anns=self.cfg['pairs_for_registration']['skip_flipped_anns'], projection=self.cfg['pairs_for_registration']['projection'], body_pose=self.cfg['pairs_for_registration']['body_pose'])
         return study_pairs_df
 
-    def find_pairs_same_acquired_date(self, study_id, skip_flipped_anns=False):
+    def find_pairs_same_acquired_date(self, study_id, skip_flipped_anns=False, projection=None, body_pose=None):
         """Find pairs of same projection, body pose and acquired_date, acquired at different times for a specific study_id.
         """
 
-        study_df = self.filter_study_id(study_id)
+        study_df = self.filter_study_id(study_id, key='dicom_df', projection=projection, body_pose=body_pose)
         df = study_df.drop_duplicates('file_id')
         if skip_flipped_anns:
             inds = df.x_sign != -1
@@ -124,11 +124,11 @@ class MaccbiDataset(Dataset):
 
         return study_pairs_df
 
-    def find_pairs_different_acquired_date(self, study_id, latest_preop=True, preop_must=True, skip_flipped_anns=False):
+    def find_pairs_different_acquired_date(self, study_id, latest_preop=True, preop_must=True, skip_flipped_anns=False, projection=None, body_pose=None):
         """Find pairs of same projection and body pose, and different acquired_date, for a specific study_id.
         """
 
-        study_df = self.filter_study_id(study_id, key='dicom_df')
+        study_df = self.filter_study_id(study_id, key='dicom_df', projection=projection, body_pose=body_pose)
         df = study_df.drop_duplicates('file_id')
         if skip_flipped_anns:
             inds = df.x_sign != -1
@@ -139,7 +139,7 @@ class MaccbiDataset(Dataset):
 
         acquired_date_list = self.sort_acquired_dates(self.get_unique_val_list(df, 'acquired_date'))
 
-        if preop_must and ('PreOp' not in acquired_date_list):
+        if (preop_must and ('PreOp' not in acquired_date_list)) or (len(acquired_date_list) < 2):
             study_pairs_df = pd.DataFrame()  # empty df
         else:
             # get pairs of scans acquired at different acquired_date
