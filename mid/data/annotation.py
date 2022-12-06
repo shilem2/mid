@@ -390,11 +390,11 @@ def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None,
         fig.get_axes()[0].axis('scaled')
         plt.tight_layout()
 
-    if show:
-        fig.show()
+        if show:
+            fig.show()
 
-    if save_fig_name:
-        fig.savefig(save_fig_name)
+        if save_fig_name:
+            fig.savefig(save_fig_name)
 
     return fig
 

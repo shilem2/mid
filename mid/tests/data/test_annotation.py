@@ -8,17 +8,17 @@ from mid.tests import read_test_data, read_data
 
 def test_create_annotation_instance():
 
-    ann1, ann2, img1, img2, pixel_spacing, units = read_test_data('MR04-019.dat')[0:6]
+    ann1, ann2, img1, img2, pixel_spacing, units = read_test_data('Maccabi_19359.dat')[0:6]
 
-    ann = Annotation(ann1, pixel_spacing, units)
+    ann = Annotation(ann1.ann, pixel_spacing, units)
 
     assert ann.units == 'pixel'
-    assert ann.pixel_spacing == approx(np.array([0.2, 0.2]))
-    assert str(ann) == 'Annotation(num_elements=15, pixel_spacing=[0.2 0.2], units=pixel)'
-    assert ann['L1'] == approx(np.array([[1099.5,  644. ],
-                                         [ 941.5,  693.5],
-                                         [1030.5,  509.5],
-                                         [ 856.5,  563. ]]))
+    assert ann.pixel_spacing == approx(np.array([1., 1.]))
+    assert str(ann) == 'Annotation(num_elements=7, pixel_spacing=[1. 1.], units=pixel)'
+    assert ann['L1'] == approx(np.array([[647.815  , 290.822  ],
+                                         [878.881  , 323.7665 ],
+                                         [892.8575 , 460.59105],
+                                         [641.226  , 454.255  ]]))
     assert set(ann) == set(ann1)
     keys = [a for a in ann]  # iterable
     ann_dict = {k: v for k, v in ann.items()}  # dict like
@@ -137,7 +137,8 @@ def test_get_keys():
 #
 #     # FIXME: read_data() does not work. datafile is saved with spireg Annotation datatype, should be converted to mid Annotation data type
 #
-#     ann1, ann2, transform = read_data('MR04-001_M12_M6.dat')
+#     # ann1, ann2, transform = read_data('MR04-001_M12_M6.dat')
+#     ann1, ann2, img1, img2, pixel_spacing, units, transform = read_test_data('Maccabi_19359.dat')
 #
 #     # test transform with mm units
 #     transform.units = 'mm'
@@ -163,7 +164,18 @@ def test_get_keys():
 #     assert L1_transformed_inverse == approx(L1_transformed_inverse_ref)
 #
 #     pass
-#
+
+
+def test_find_uiv_liv():
+
+    ann1, ann2, img1, img2, pixel_spacing, units, transform = read_test_data('Maccabi_19359.dat')
+
+
+
+
+    pass
+
+
 
 if __name__ == '__main__':
 
@@ -171,6 +183,8 @@ if __name__ == '__main__':
     # test_get_values()
     # test_change_units()
     # test_get_keys()
-    ## test_values_transformed()
+    # test_values_transformed()
+    test_find_uiv_liv()
+
 
     pass
