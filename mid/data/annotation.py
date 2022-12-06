@@ -241,7 +241,6 @@ class Annotation(MutableMapping):
             keys = self.sort_keys_by_vert_names(keys)
         return keys
 
-
     def get_common_keys(self, ann, keys_wanted=None):
         keys_common = sorted(list(set(self).intersection(set(ann))))
         if keys_wanted is not None:
@@ -249,7 +248,7 @@ class Annotation(MutableMapping):
         return keys_common
 
     def sort_keys_by_vert_names(self, keys):
-        """Sort keys by vertebrates names
+        """Sort keys by vertebrae names.
         """
         indices_ordered = list(range(len(self.vert_names)))
         zipped_sorted_ind_vert = list(zip(indices_ordered, self.vert_names))
@@ -257,6 +256,34 @@ class Annotation(MutableMapping):
         keys_ordered = [self.vert_names[ind] for ind in indices]
 
         return keys_ordered
+
+    def get_uiv_liv(self, keys_wanted=None):
+        """Get UIV and LIV vertebrae names.
+        """
+
+        uiv, liv, vert_above_uiv, vert_below_liv = None, None, [], []
+
+        keys_screw = self.get_keys('screw')
+        screw_vert_names = [name.split('_')[1] for name in keys_screw]
+        screw_vert_names = list(set(screw_vert_names))
+        screw_vert_names_sorted = self.sort_keys_by_vert_names(screw_vert_names)
+        if len(screw_vert_names_sorted) > 0:
+            uiv = screw_vert_names_sorted[0]
+            liv = screw_vert_names_sorted[-1]
+
+            keys_vert = self.get_vert_keys()
+            if keys_wanted is not None:
+                keys_vert = sorted(list(set(keys_vert).intersection(set(keys_wanted))))
+            keys_vert = self.sort_keys_by_vert_names(keys_vert)
+
+            uiv_ind = keys_vert.index(uiv) if uiv in keys_vert else None
+            liv_ind = keys_vert.index(liv) if liv in keys_vert else None
+
+            vert_above_uiv = keys_vert[:uiv_ind] if uiv_ind is not None else []
+            vert_below_liv = keys_vert[liv_ind + 1:] if liv_ind is not None else []
+
+        return uiv, liv, vert_above_uiv, vert_below_liv
+
 
     def load_dicom(self):
         if self.dicom_path is not None:

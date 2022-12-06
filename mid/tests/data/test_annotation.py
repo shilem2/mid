@@ -170,11 +170,39 @@ def test_find_uiv_liv():
 
     ann1, ann2, img1, img2, pixel_spacing, units, transform = read_test_data('Maccabi_19359.dat')
 
+    # ann2.plot_annotations()  # display
 
+    uiv, liv, vert_above_uiv, vert_below_liv = ann2.get_uiv_liv(keys_wanted=None)
 
+    assert uiv == 'L4'
+    assert liv == 'S1'
+    assert set(vert_above_uiv) == set(['T11', 'T12', 'L1', 'L2', 'L3'])
+    assert set(vert_below_liv) == set([])
+
+    keys_wanted = ['L2', 'L3', 'L4', 'L5']
+    uiv, liv, vert_above_uiv, vert_below_liv = ann2.get_uiv_liv(keys_wanted=keys_wanted)
+
+    assert uiv == 'L4'
+    assert liv == 'S1'
+    assert set(vert_above_uiv) == set(['L2', 'L3'])
+    assert set(vert_below_liv) == set([])
+
+    keys_wanted = ['L2', 'L3']
+    uiv, liv, vert_above_uiv, vert_below_liv = ann2.get_uiv_liv(keys_wanted=keys_wanted)
+
+    assert uiv == 'L4'
+    assert liv == 'S1'
+    assert set(vert_above_uiv) == set([])
+    assert set(vert_below_liv) == set([])
+
+    uiv, liv, vert_above_uiv, vert_below_liv = ann1.get_uiv_liv(keys_wanted=None)
+
+    assert uiv is None
+    assert liv is None
+    assert set(vert_above_uiv) == set([])
+    assert set(vert_below_liv) == set([])
 
     pass
-
 
 
 if __name__ == '__main__':
