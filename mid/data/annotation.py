@@ -265,22 +265,22 @@ class Annotation(MutableMapping):
 
         keys_screw = self.get_keys('screw')
         screw_vert_names = [name.split('_')[1] for name in keys_screw]
-        screw_vert_names = list(set(screw_vert_names))
-        screw_vert_names_sorted = self.sort_keys_by_vert_names(screw_vert_names)
-        if len(screw_vert_names_sorted) > 0:
-            uiv = screw_vert_names_sorted[0]
-            liv = screw_vert_names_sorted[-1]
+        screw_vert_names = self.sort_keys_by_vert_names(list(set(screw_vert_names)))
+        if len(screw_vert_names) > 0:
+            uiv = screw_vert_names[0]
+            liv = screw_vert_names[-1]
 
-            keys_vert = self.get_vert_keys()
-            if keys_wanted is not None:
-                keys_vert = sorted(list(set(keys_vert).intersection(set(keys_wanted))))
-            keys_vert = self.sort_keys_by_vert_names(keys_vert)
+            keys_vert = self.get_vert_keys(sort=True)
 
             uiv_ind = keys_vert.index(uiv) if uiv in keys_vert else None
             liv_ind = keys_vert.index(liv) if liv in keys_vert else None
 
             vert_above_uiv = keys_vert[:uiv_ind] if uiv_ind is not None else []
             vert_below_liv = keys_vert[liv_ind + 1:] if liv_ind is not None else []
+
+            if keys_wanted is not None:
+                vert_above_uiv = self.sort_keys_by_vert_names(list(set(vert_above_uiv).intersection(set(keys_wanted))))
+                vert_below_liv = self.sort_keys_by_vert_names(list(set(vert_below_liv).intersection(set(keys_wanted))))
 
         return uiv, liv, vert_above_uiv, vert_below_liv
 

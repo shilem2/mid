@@ -192,7 +192,7 @@ def test_find_uiv_liv():
 
     assert uiv == 'L4'
     assert liv == 'S1'
-    assert set(vert_above_uiv) == set([])
+    assert set(vert_above_uiv) == set(['L2', 'L3'])
     assert set(vert_below_liv) == set([])
 
     uiv, liv, vert_above_uiv, vert_below_liv = ann1.get_uiv_liv(keys_wanted=None)
