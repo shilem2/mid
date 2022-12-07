@@ -43,6 +43,12 @@ class Annotation(MutableMapping):
                   'L1', 'L2', 'L3', 'L4', 'L5', 'L6',
                   'S1', 'S2', 'S3', 'S4', 'S5',
                   ]
+    vert_names_no_L6 = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+                        'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
+                        'L1', 'L2', 'L3', 'L4', 'L5', # 'L6',
+                        'S1', 'S2', 'S3', 'S4', 'S5',
+                        ]
+
 
     def __init__(self, ann, pixel_spacing, units, dicom_path=None, metadata=None, display=False, save_fig_name=None):
 
@@ -271,18 +277,18 @@ class Annotation(MutableMapping):
             liv = screw_vert_names[-1]
 
             # find uiv+1, liv-1
-            uiv_ind_global = Annotation.vert_names.index(uiv)  # index in global list of all possible vertebrae
-            uivp1 = Annotation.vert_names[uiv_ind_global - 1] if uiv_ind_global > 0 else None
-            liv_ind_global = Annotation.vert_names.index(liv)
-            livm1 = Annotation.vert_names[liv_ind_global + 1] if liv_ind_global < (len(Annotation.vert_names)-2) else None  # FIXME: this list contains bizzare values such as L6 and S5, should ignore them
+            uiv_ind_global = Annotation.vert_names_no_L6.index(uiv)  # index in global list of all possible vertebrae
+            uivp1 = Annotation.vert_names_no_L6[uiv_ind_global - 1] if uiv_ind_global > 0 else None
+            liv_ind_global = Annotation.vert_names_no_L6.index(liv)
+            livm1 = Annotation.vert_names_no_L6[liv_ind_global + 1] if liv_ind_global < (len(Annotation.vert_names_no_L6)-2) else None  # FIXME: this list contains bizzare values such as L6 and S5, should ignore them
 
             keys_vert = self.get_vert_keys(sort=True)
 
             uivp1_ind = keys_vert.index(uivp1) if uivp1 in keys_vert else None
             livm1_ind = keys_vert.index(livm1) if livm1 in keys_vert else None
 
-            vert_above_uiv = keys_vert[:uivp1_ind] if uiv_ind is not None else []
-            vert_below_liv = keys_vert[livm1_ind:] if liv_ind is not None else []
+            vert_above_uiv = keys_vert[:(uivp1_ind + 1)] if uivp1_ind is not None else []  # +1 since last element is omitted in slicing
+            vert_below_liv = keys_vert[livm1_ind:] if livm1_ind is not None else []
 
             if keys_wanted is not None:
                 vert_above_uiv = self.sort_keys_by_vert_names(list(set(vert_above_uiv).intersection(set(keys_wanted))))
