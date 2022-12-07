@@ -270,13 +270,19 @@ class Annotation(MutableMapping):
             uiv = screw_vert_names[0]
             liv = screw_vert_names[-1]
 
+            # find uiv+1, liv-1
+            uiv_ind_global = Annotation.vert_names.index(uiv)  # index in global list of all possible vertebrae
+            uivp1 = Annotation.vert_names[uiv_ind_global - 1] if uiv_ind_global > 0 else None
+            liv_ind_global = Annotation.vert_names.index(liv)
+            livm1 = Annotation.vert_names[liv_ind_global + 1] if liv_ind_global < (len(Annotation.vert_names)-2) else None  # FIXME: this list contains bizzare values such as L6 and S5, should ignore them
+
             keys_vert = self.get_vert_keys(sort=True)
 
-            uiv_ind = keys_vert.index(uiv) if uiv in keys_vert else None
-            liv_ind = keys_vert.index(liv) if liv in keys_vert else None
+            uivp1_ind = keys_vert.index(uivp1) if uivp1 in keys_vert else None
+            livm1_ind = keys_vert.index(livm1) if livm1 in keys_vert else None
 
-            vert_above_uiv = keys_vert[:uiv_ind] if uiv_ind is not None else []
-            vert_below_liv = keys_vert[liv_ind + 1:] if liv_ind is not None else []
+            vert_above_uiv = keys_vert[:uivp1_ind] if uiv_ind is not None else []
+            vert_below_liv = keys_vert[livm1_ind:] if liv_ind is not None else []
 
             if keys_wanted is not None:
                 vert_above_uiv = self.sort_keys_by_vert_names(list(set(vert_above_uiv).intersection(set(keys_wanted))))
