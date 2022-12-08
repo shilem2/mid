@@ -204,6 +204,46 @@ def test_find_uiv_liv():
 
     pass
 
+def test_warp_image():
+
+    ann1, ann2, _, _, pixel_spacing, units, transform = read_test_data('Maccabi_19359.dat')
+
+    img1 = ann1.load_dicom()
+    img2 = ann2.load_dicom()
+
+    ann1.plot_annotations()
+    ann2.plot_annotations()
+
+    # ann1.plot_dicom()
+    # ann2.plot_dicom()
+
+    from skimage.transform import warp
+    from mid.data import plot_annotations
+
+
+    img1_warped_inv = warp(img1, transform.inverse)
+    ann1.plot_dicom(img1_warped_inv)
+    ann2_dict = ann2.ann
+    plot_annotations(img1_warped_inv, ann2_dict, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1',
+                     colors=['r', 'b', 'm', 'c'], marker='x', title_str='', show=True, save_fig_name=None)
+
+    keys_vert2 = ann2.values_dict(keys=ann2.get_vert_keys())
+    plot_annotations(img1_warped_inv, keys_vert2, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1',
+                     colors=['r', 'b', 'm', 'c'], marker='x', title_str='', show=True, save_fig_name=None)
+
+    # import cv2
+    # img1_cv2 = cv2.warpPerspective(img1, transform.params, (img1.shape[1], img1.shape[0]))
+    # ann1.plot_dicom(img1_cv2)
+
+    img2_warped_inv = warp(img2, transform)
+    ann2.plot_dicom(img2_warped_inv)
+    ann1_dict = ann1.ann
+    plot_annotations(img2_warped_inv, ann1_dict, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1',
+                     colors=['r', 'b', 'm', 'c'], marker='x', title_str='', show=True, save_fig_name=None)
+
+
+    pass
+
 
 if __name__ == '__main__':
 
@@ -212,7 +252,8 @@ if __name__ == '__main__':
     # test_change_units()
     # test_get_keys()
     # test_values_transformed()
-    test_find_uiv_liv()
+    # test_find_uiv_liv()
+    test_warp_image()
 
 
     pass

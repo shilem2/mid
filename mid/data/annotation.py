@@ -297,13 +297,33 @@ class Annotation(MutableMapping):
         return uiv, liv, vert_above_uiv, vert_below_liv
 
 
-    def load_dicom(self):
+    def load_dicom(self, preprocess='clahe1'):
         if self.dicom_path is not None:
             img = sitk.ReadImage(self.dicom_path)  # sitk.Image
             img = sitk.GetArrayFromImage(img).squeeze()  # ndarray
+            if preprocess is not None:
+                img = simple_preprocssing(img, preprocess, keep_input_dtype=False, display=False)
         else:
             img = None
         return img
+
+    def plot_dicom(self, img=None, preprocess='clahe1'):
+
+        if img is None:
+            img_path = self.dicom_path
+            img = sitk.ReadImage(img_path)  # sitk.Image
+            nda = sitk.GetArrayFromImage(img).squeeze()  # ndarray
+            if preprocess is not None:
+                nda = simple_preprocssing(nda, preprocess, keep_input_dtype=False, display=False)
+        else:
+            nda = img
+
+        fig = plt.figure()
+        ax = fig.add_subplot()
+        ax.imshow(nda, cmap='gray')
+        ax.axis('scaled')
+        plt.show(block=False)
+
 
     def plot_annotations(self, fontsize=8, plot_lines=False, display=True, save_fig_name=None):
         """Plot annotations on top of image.
@@ -382,8 +402,8 @@ def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None,
 
     Parameters
     ----------
-    img_path : str
-        Image file path
+    img_path : str or numpay.array
+        Image file path, or image as numpy array.
     ann_dict : dict
         Annotation dictionary
     fontsize : int, optional
@@ -406,11 +426,15 @@ def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None,
         ax = fig.add_subplot()
 
         if img_path is not None:
-            # read image as ndarray
-            img = sitk.ReadImage(img_path)  # sitk.Image
-            nda = sitk.GetArrayFromImage(img).squeeze()  # ndarray
-            if preprocess is not None:
-                nda = simple_preprocssing(nda, preprocess, keep_input_dtype=False, display=False)
+            if isinstance(img_path, str):
+                # read image as ndarray
+                img = sitk.ReadImage(img_path)  # sitk.Image
+                nda = sitk.GetArrayFromImage(img).squeeze()  # ndarray
+                if preprocess is not None:
+                    nda = simple_preprocssing(nda, preprocess, keep_input_dtype=False, display=False)
+            elif isinstance(img_path, np.ndarray):
+                nda = img_path
+
             ax.imshow(nda, cmap='gray')
         else:
             ax.invert_yaxis()
