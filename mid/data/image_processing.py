@@ -63,7 +63,7 @@ def generate_simple_mask(img, anns, margin=20, display=False):
 
     return img_masked
 
-def simple_preprocssing(img, process_type, keep_input_dtype=True, display=False):
+def simple_preprocssing(img, process_type, keep_input_dtype=True, flip_lr=False, display=False):
     """
     Simple pre processing of image gray levels
     Parameters
@@ -95,6 +95,9 @@ def simple_preprocssing(img, process_type, keep_input_dtype=True, display=False)
 
     if keep_input_dtype:
         img_out = adjust_dynamic_range(img_out, vmin=img_out.min(), vmax=img_out.max(), dtype=img.dtype)
+
+    if flip_lr:
+        img_out = np.fliplr(img_out)
 
     if display:
         fig, axes = plt.subplots(nrows=1, ncols=2,

@@ -61,6 +61,7 @@ class Annotation(MutableMapping):
         self.units = units
         self.dicom_path = dicom_path
         self.metadata = metadata
+        self.flipped_anns = True if (metadata is not None) and ('flipped_anns' in metadata) and (metadata['flipped_anns'] == -1.) else False
 
         if display or (save_fig_name is not None):
             self.plot_annotations(display=display, save_fig_name=save_fig_name)
@@ -302,7 +303,7 @@ class Annotation(MutableMapping):
             img = sitk.ReadImage(self.dicom_path)  # sitk.Image
             img = sitk.GetArrayFromImage(img).squeeze()  # ndarray
             if preprocess is not None:
-                img = simple_preprocssing(img, preprocess, keep_input_dtype=False, display=False)
+                img = simple_preprocssing(img, preprocess, keep_input_dtype=False, flip_lr=self.flipped_anns, display=False)
         else:
             img = None
         return img
@@ -314,7 +315,7 @@ class Annotation(MutableMapping):
             img = sitk.ReadImage(img_path)  # sitk.Image
             nda = sitk.GetArrayFromImage(img).squeeze()  # ndarray
             if preprocess is not None:
-                nda = simple_preprocssing(nda, preprocess, keep_input_dtype=False, display=False)
+                nda = simple_preprocssing(nda, preprocess, keep_input_dtype=False, flip_lr=self.flipped_anns, display=False)
         else:
             nda = img
 
@@ -355,7 +356,7 @@ class Annotation(MutableMapping):
         ann_dict = self.ann
 
         title_str = dict2string(self.metadata)
-        fig = plot_annotations(img_path, ann_dict, fontsize, plot_lines, title_str=title_str, show=display, save_fig_name=save_fig_name)
+        fig = plot_annotations(img_path, ann_dict, fontsize, plot_lines, flip_img_lr=self.flipped_anns, title_str=title_str, show=display, save_fig_name=save_fig_name)
 
         if change_units:
             self.change_units(units_orig)
@@ -395,7 +396,7 @@ def dict2string(d, sep=' | ', n_new_line=2):
 
     return s
 
-def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1',
+def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1', flip_img_lr=False,
                      colors=['r', 'b', 'm', 'c'], marker='x', title_str='', show=True, save_fig_name=None):
     """
     Plot annotations on top of image.
@@ -431,7 +432,7 @@ def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None,
                 img = sitk.ReadImage(img_path)  # sitk.Image
                 nda = sitk.GetArrayFromImage(img).squeeze()  # ndarray
                 if preprocess is not None:
-                    nda = simple_preprocssing(nda, preprocess, keep_input_dtype=False, display=False)
+                    nda = simple_preprocssing(nda, preprocess, keep_input_dtype=False, flip_lr=flip_img_lr, display=False)
             elif isinstance(img_path, np.ndarray):
                 nda = img_path
 

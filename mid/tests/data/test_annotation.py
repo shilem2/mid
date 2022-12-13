@@ -250,10 +250,10 @@ if __name__ == '__main__':
     # test_create_annotation_instance()
     # test_get_values()
     # test_change_units()
-    # test_get_keys()
+    test_get_keys()
     # test_values_transformed()
     # test_find_uiv_liv()
-    test_warp_image()
+    # test_warp_image()
 
 
     pass

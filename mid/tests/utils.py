@@ -2,7 +2,7 @@ import os
 import pickle
 import blosc
 from mid.data.utils import load_compressed_pickle
-
+from mid.data import Annotation
 
 def read_test_data(file_name='MR04-019.dat'):
 
@@ -13,6 +13,12 @@ def read_test_data(file_name='MR04-019.dat'):
     pickled = blosc.decompress(compressed)
     data = pickle.loads(pickled)
     ann1, ann2, img1, img2, pixel_spacing, units, transform = data
+
+    # add missing attributes (added after saving test data)
+    if isinstance(ann1, Annotation) and not hasattr(ann1, 'flipped_anns'):
+        ann1.flipped_anns = None
+    if isinstance(ann2, Annotation) and not hasattr(ann2, 'flipped_anns'):
+        ann2.flipped_anns = None
 
     return ann1, ann2, img1, img2, pixel_spacing, units, transform
 

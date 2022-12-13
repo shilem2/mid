@@ -71,9 +71,9 @@ class MaccbiDataset(Dataset):
         s = sorted(self.dataset[key][col_name].unique())
         return s
 
-    def get_ann(self, study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, relative_file_path=None, units='mm', display=False, save_fig_name=None):
+    def get_ann(self, study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, relative_file_path=None, flipped_anns=None, units='mm', display=False, save_fig_name=None):
         ann = get_scan_anns(self.dataset['vert_df'], self.dataset['rod_df'], self.dataset['screw_df'], self.dataset['dicom_df'], self.dataset['icl_df'], self.dataset['femur_df'],
-                            study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path, units, self.cfg['pixel_spacing_override'], display, save_fig_name)
+                            study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path, units, self.cfg['pixel_spacing_override'], display, save_fig_name, flipped_anns)
         return ann
 
     def filter_study_id(self, study_id, key='vert_df', projection=None, body_pose=None):

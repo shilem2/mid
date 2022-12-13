@@ -480,7 +480,8 @@ def get_single_femur_anns(df, id, units='pixel'):
 
 
 def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_df=None, femur_df=None,
-                  study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, relative_file_path=None, units='mm', pixel_spacing_override=None, display=False, save_fig_name=None):
+                  study_id=None, projection=None, body_pos=None, acquired=None, acquired_date=None, file_id=None, relative_file_path=None,
+                  units='mm', pixel_spacing_override=None, display=False, save_fig_name=None, flipped_anns=None):
     """
     Get scan annotations.
 
@@ -506,6 +507,9 @@ def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_d
         Original annotations value type is 'mm'.
     display : bool, optional
         If True, annotations will be displayed on top of the image. dicom_df must be given.
+    flipped_anns : float, optional
+        Indicates if annotations are right-left flliped with regard to the dicom image.
+        Should contain float('nan') if annotations are not flipped, and -1 if they are.
 
     Returns
     -------
@@ -524,7 +528,6 @@ def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_d
     anns_icl = {}
     anns_femur = {}
     pixel_spacing_vert = pixel_spacing_rod = pixel_spacing_screw = pixel_spacing_icl = pixel_spacing_femur = None
-    # dicom_path = None
 
     if vert_df is not None:
         vert_df = filter_anns_df(vert_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
@@ -564,7 +567,7 @@ def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_d
         pixel_spacing = pixel_spacing_override
 
     # pack all data in Annotation object
-    metadata = {'study_id': study_id, 'projection': projection, 'body_pos': body_pos, 'acquired': acquired, 'acquired_date': acquired_date, 'file_id': file_id, 'pixel_spacing_orig': pixel_spacing_orig, **metadata_df}
+    metadata = {'study_id': study_id, 'projection': projection, 'body_pos': body_pos, 'acquired': acquired, 'acquired_date': acquired_date, 'file_id': file_id, 'pixel_spacing_orig': pixel_spacing_orig, 'flipped_anns': flipped_anns, **metadata_df}
     ann = Annotation(ann_dict, pixel_spacing, units, dicom_path, metadata, display=display, save_fig_name=save_fig_name)
 
     return ann
