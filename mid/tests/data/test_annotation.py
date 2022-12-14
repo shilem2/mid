@@ -1,10 +1,12 @@
 import numpy as np
 import pytest
 from pytest import approx
-from skimage.transform import SimilarityTransform
+from skimage.transform import SimilarityTransform, warp
+import matplotlib.pyplot as plt
 
-from mid.data import Annotation
+from mid.data import Annotation, plot_annotations
 from mid.tests import read_test_data, read_data
+
 
 def test_create_annotation_instance():
 
@@ -211,25 +213,26 @@ def test_warp_image():
     img1 = ann1.load_dicom()
     img2 = ann2.load_dicom()
 
-    ann1.plot_annotations()
+    ann1.plot_annotations(markersize=5, marker='.')
     ann2.plot_annotations()
+
+    plot_annotations(img1, ann1.ann, fontsize=8, markersize=5, plot_lines=False, fig=None, preprocess='clahe1',
+                     colors=None, marker='.', title_str='', show=True, save_fig_name=None)
+    plot_annotations(img1, ann1.ann, fontsize=8, markersize=5, plot_lines=True, fig=None, preprocess='clahe1',
+                     colors=None, marker='.', title_str='', show=True, save_fig_name=None)
 
     # ann1.plot_dicom()
     # ann2.plot_dicom()
-
-    from skimage.transform import warp
-    from mid.data import plot_annotations
-
 
     img1_warped_inv = warp(img1, transform.inverse)
     ann1.plot_dicom(img1_warped_inv)
     ann2_dict = ann2.ann
     plot_annotations(img1_warped_inv, ann2_dict, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1',
-                     colors=['r', 'b', 'm', 'c'], marker='x', title_str='', show=True, save_fig_name=None)
+                     colors=None, marker='x', title_str='', show=True, save_fig_name=None)
 
     keys_vert2 = ann2.values_dict(keys=ann2.get_vert_keys())
     plot_annotations(img1_warped_inv, keys_vert2, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1',
-                     colors=['r', 'b', 'm', 'c'], marker='x', title_str='', show=True, save_fig_name=None)
+                     colors=None, marker='x', title_str='', show=True, save_fig_name=None)
 
     # import cv2
     # img1_cv2 = cv2.warpPerspective(img1, transform.params, (img1.shape[1], img1.shape[0]))
@@ -239,7 +242,7 @@ def test_warp_image():
     ann2.plot_dicom(img2_warped_inv)
     ann1_dict = ann1.ann
     plot_annotations(img2_warped_inv, ann1_dict, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1',
-                     colors=['r', 'b', 'm', 'c'], marker='x', title_str='', show=True, save_fig_name=None)
+                     colors=None, marker='x', title_str='', show=True, save_fig_name=None)
 
 
     pass
@@ -250,10 +253,10 @@ if __name__ == '__main__':
     # test_create_annotation_instance()
     # test_get_values()
     # test_change_units()
-    test_get_keys()
+    # test_get_keys()
     # test_values_transformed()
     # test_find_uiv_liv()
-    # test_warp_image()
+    test_warp_image()
 
 
     pass

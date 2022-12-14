@@ -326,7 +326,7 @@ class Annotation(MutableMapping):
         plt.show(block=False)
 
 
-    def plot_annotations(self, fontsize=8, plot_lines=False, display=True, save_fig_name=None):
+    def plot_annotations(self, fontsize=6, markersize=3, marker='.', plot_lines=True, plot_text=True, display=True, save_fig_name=None):
         """Plot annotations on top of image.
 
         Parameters
@@ -356,7 +356,7 @@ class Annotation(MutableMapping):
         ann_dict = self.ann
 
         title_str = dict2string(self.metadata)
-        fig = plot_annotations(img_path, ann_dict, fontsize, plot_lines, flip_img_lr=self.flipped_anns, title_str=title_str, show=display, save_fig_name=save_fig_name)
+        fig = plot_annotations(img_path, ann_dict, fontsize, markersize, plot_lines, plot_text, flip_img_lr=self.flipped_anns, marker=marker, title_str=title_str, show=display, save_fig_name=save_fig_name)
 
         if change_units:
             self.change_units(units_orig)
@@ -396,8 +396,21 @@ def dict2string(d, sep=' | ', n_new_line=2):
 
     return s
 
-def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None, preprocess='clahe1', flip_img_lr=False,
-                     colors=['r', 'b', 'm', 'c'], marker='x', title_str='', show=True, save_fig_name=None):
+
+def get_color_palette(color_style='default'):
+
+    assert color_style in ['default', 'rbmc']
+
+    if color_style == 'rbmc':  # legacy colors
+        colors = ['r', 'b', 'm', 'c']
+    else:
+        plt.style.use(color_style)
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+    return colors
+
+def plot_annotations(img_path, ann_dict, fontsize=6, markersize=3, plot_lines=True, plot_text=True, fig=None, preprocess='clahe1', flip_img_lr=False,
+                     colors=None, marker='.', title_str='', show=True, save_fig_name=None):
     """
     Plot annotations on top of image.
 
@@ -442,11 +455,14 @@ def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None,
 
         ax.axis('scaled')
 
+    if colors is None:
+        colors = get_color_palette()
+
     # plot anns
     counter = 0
     for ann_name, ann in ann_dict.items():
         color = colors[counter % len(colors)]  # alternate between colors
-        fig = plot_ann(fig, ann, ann_name, color, marker, fontsize, plot_lines)
+        fig = plot_ann(fig, ann, ann_name, color, marker, markersize, fontsize, plot_lines, plot_text)
         counter += 1
 
     if show or save_fig_name:
@@ -462,18 +478,22 @@ def plot_annotations(img_path, ann_dict, fontsize=8, plot_lines=False, fig=None,
 
     return fig
 
-def plot_ann(fig, ann, text, color='r', marker='x', fontsize=8, plot_lines=False):
+def plot_ann(fig, ann, text, color='r', marker='x', markersize=3, fontsize=6, plot_lines=True, plot_text=True):
 
     ax = fig.get_axes()[0]
-    ax.plot(ann[:, 0], ann[:, 1], '{}{}'.format(color, marker), mfc='none')
-    ax.text(ann[:, 0].mean(), ann[:, 1].mean(), text,
-            verticalalignment='center', horizontalalignment='center',
-            # transform=ax.transAxes,
-            color=color, fontsize=fontsize)
+    if marker is not None:
+        # ax.plot(ann[:, 0], ann[:, 1], color=color, marker=marker, mfc='none', markersize=markersize, linestyle='none')
+        ax.plot(ann[:, 0], ann[:, 1], color=color, marker=marker, markersize=markersize, linestyle='none')
+    if plot_text:
+        ax.text(ann[:, 0].mean(), ann[:, 1].mean(), text,
+                verticalalignment='center', horizontalalignment='center',
+                # transform=ax.transAxes,
+                color=color, fontsize=fontsize)
 
     # plot lines between pairs of annotations
     if plot_lines:
         for n in range(0, ann.shape[0], 2):  # jump 2 rows at a time
-            ax.plot(ann[n:n + 2, 0], ann[n:n + 2, 1], '{}--'.format(color))
+            ax.plot(ann[n:n + 2, 0], ann[n:n + 2, 1], color=color, linestyle='-', linewidth=0.75)
+
 
     return fig
