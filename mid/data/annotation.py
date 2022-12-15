@@ -434,6 +434,9 @@ def plot_annotations(img_path, ann_dict, fontsize=6, markersize=3, plot_lines=Tr
     None
     """
 
+    if not show and matplotlib.is_interactive():
+        plt.ioff()
+
     # show image
     if fig is None:
         fig = plt.figure()
