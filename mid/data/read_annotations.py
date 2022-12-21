@@ -76,7 +76,7 @@ def get_all_vert_anns(df, units='pixel'):
             ''.format(df.pixel_space_x.unique(), df.pixel_space_y.unique())
     pixel_spacing = (df.pixel_space_x.iloc[0], df.pixel_space_y.iloc[0])
 
-    metadata = {'dcm_date': str(df.iloc[0].dcm_date) if 'dcm_data' in df.columns else None,
+    metadata = {'dcm_date': str(df.iloc[0].dcm_date) if 'dcm_date' in df.columns else None,
                 'relative_file_path': df.iloc[0].relative_file_path if 'relative_file_path' in df.columns else None,
                 }
 

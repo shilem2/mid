@@ -96,7 +96,7 @@ class MaccbiDataset(Dataset):
         if self.cfg['pairs_for_registration']['acquired_date'] == 'same':
             study_pairs_df = self.find_pairs_same_acquired_date(study_id, self.cfg['pairs_for_registration']['skip_flipped_anns'], self.cfg['pairs_for_registration']['projection'], self.cfg['pairs_for_registration']['body_pose'])
         elif self.cfg['pairs_for_registration']['acquired_date'] == 'different':
-            study_pairs_df = self.find_pairs_different_acquired_date(study_id, latest_preop=self.cfg['pairs_for_registration']['latest_preop'], skip_flipped_anns=self.cfg['pairs_for_registration']['skip_flipped_anns'], projection=self.cfg['pairs_for_registration']['projection'], body_pose=self.cfg['pairs_for_registration']['body_pose'])
+            study_pairs_df = self.find_pairs_different_acquired_date(study_id, latest_preop=self.cfg['pairs_for_registration']['latest_preop'], latest_postop=self.cfg['pairs_for_registration']['latest_postop'], skip_flipped_anns=self.cfg['pairs_for_registration']['skip_flipped_anns'], projection=self.cfg['pairs_for_registration']['projection'], body_pose=self.cfg['pairs_for_registration']['body_pose'])
         return study_pairs_df
 
     def find_pairs_same_acquired_date(self, study_id, skip_flipped_anns=False, projection=None, body_pose=None):
@@ -124,9 +124,11 @@ class MaccbiDataset(Dataset):
 
         return study_pairs_df
 
-    def find_pairs_different_acquired_date(self, study_id, latest_preop=True, preop_must=True, skip_flipped_anns=False, projection=None, body_pose=None):
+    def find_pairs_different_acquired_date(self, study_id, latest_preop=True, latest_postop=False, preop_must=True, skip_flipped_anns=False, projection=None, body_pose=None):
         """Find pairs of same projection and body pose, and different acquired_date, for a specific study_id.
         """
+
+        assert not (latest_preop and latest_postop), 'at least on of latest_preop, latest_postop must be False!'
 
         study_df = self.filter_study_id(study_id, key='vert_df', projection=projection, body_pose=body_pose)
         df = study_df.drop_duplicates('file_id')
@@ -135,6 +137,9 @@ class MaccbiDataset(Dataset):
             df = df[inds]
         if latest_preop:
             df = keep_latest_preop(df, groupCols=['StudyID', 'acquired_date', 'projection', 'bodyPos'], sortCols=['StudyID', 'dcm_date', 'projection', 'bodyPos'], verbose=False)
+        elif latest_postop:
+            df = keep_latest_postop(df, groupCols=['StudyID', 'acquired_date', 'projection', 'bodyPos'], sortCols=['StudyID', 'dcm_date', 'projection', 'bodyPos'], verbose=False)
+
         df = df[['file_id', 'StudyID', 'projection', 'acquired_date', 'bodyPos', 'acquired', 'relative_file_path', 'x_sign']]  # use only most important columns
 
         acquired_date_list = self.sort_acquired_dates(self.get_unique_val_list(df, 'acquired_date'))
@@ -199,21 +204,51 @@ def keep_latest_preop(df, groupCols=['StudyID', 'acquired_date', 'projection', '
     """
 
     mask = df["acquired_date"] == "PreOp"
-    df["dcm_date"] = pd.to_datetime(df["dcm_date"], infer_datetime_format=True)
-    df_pre = df[mask].copy()
+    df.loc[:, "dcm_date"] = pd.to_datetime(df[ "dcm_date"], infer_datetime_format=True)
+    df_masked = df[mask].copy()
 
     if verbose:
         print("before dropping duplicate pre")
-        count_df_ids(df_pre)
+        count_df_ids(df_masked)
 
-    df_post = df[~mask]
-    df_pre = df_pre.sort_values(by=["dcm_date"], ascending=False)
-    df_pre = df_pre.drop_duplicates(subset=groupCols, keep="first")
+    df_not_masked = df[~mask]
+    df_masked = df_masked.sort_values(by=["dcm_date"], ascending=False)
+    df_masked = df_masked.drop_duplicates(subset=groupCols, keep="first")
 
     if verbose:
         print("after dropping duplicate pre")
-        count_df_ids(df_pre)
-    df = pd.concat([df_pre, df_post])
+        count_df_ids(df_masked)
+    df = pd.concat([df_masked, df_not_masked])
+
+    ### I don't remember if this sort / sort order is strictly. necessary! Can test it..
+    partial_sort_keys = [i for i in groupCols if i != "StudyID"]  # group keys except for study ID,
+    #     df = df.sort_values(by=["StudyID","dcm_date","vertNum_bottom","vertNum_top"],ascending=True)## ORIG - broken if verts not present
+    df = df.sort_values(by=sortCols + partial_sort_keys, ascending=True)
+
+    return df
+
+
+def keep_latest_postop(df, groupCols=['StudyID', 'acquired_date', 'projection', 'bodyPos'], sortCols=['StudyID', 'dcm_date', 'projection', 'bodyPos'], verbose=False):
+    """
+    Keeps last preop row (and all other/postop rows), according to dcm_date
+    """
+    df = df.copy()
+    mask = df["acquired_date"] != "PreOp"
+    df.loc[:, "dcm_date"] = pd.to_datetime(df[ "dcm_date"], infer_datetime_format=True)
+    df_masked = df[mask].copy()
+
+    if verbose:
+        print("before dropping duplicate pre")
+        count_df_ids(df_masked)
+
+    df_not_masked = df[~mask]
+    df_masked = df_masked.sort_values(by=["dcm_date"], ascending=False)
+    df_masked = df_masked.drop_duplicates(subset=groupCols, keep="first")
+
+    if verbose:
+        print("after dropping duplicate pre")
+        count_df_ids(df_masked)
+    df = pd.concat([df_masked, df_not_masked])
 
     ### I don't remember if this sort / sort order is strictly. necessary! Can test it..
     partial_sort_keys = [i for i in groupCols if i != "StudyID"]  # group keys except for study ID,

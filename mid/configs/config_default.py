@@ -11,6 +11,7 @@ data = {'pixel_spacing_override': None,
         'pairs_for_registration': {'acquired_date': 'different',
                                    'skip_flipped_anns': False,
                                    'latest_preop': True,
+                                   'latest_postop': False,
                                    'projection': None,
                                    'body_pose': None,
                                    }
