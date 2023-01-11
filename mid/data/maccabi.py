@@ -198,21 +198,51 @@ def keep_latest_preop(df, groupCols=['StudyID', 'acquired_date', 'projection', '
     """
 
     mask = df["acquired_date"] == "PreOp"
-    df["dcm_date"] = pd.to_datetime(df["dcm_date"], infer_datetime_format=True)
-    df_pre = df[mask].copy()
+    df.loc[:, "dcm_date"] = pd.to_datetime(df[ "dcm_date"], infer_datetime_format=True)
+    df_masked = df[mask].copy()
 
     if verbose:
         print("before dropping duplicate pre")
-        count_df_ids(df_pre)
+        count_df_ids(df_masked)
 
-    df_post = df[~mask]
-    df_pre = df_pre.sort_values(by=["dcm_date"], ascending=False)
-    df_pre = df_pre.drop_duplicates(subset=groupCols, keep="first")
+    df_not_masked = df[~mask]
+    df_masked = df_masked.sort_values(by=["dcm_date"], ascending=False)
+    df_masked = df_masked.drop_duplicates(subset=groupCols, keep="first")
 
     if verbose:
         print("after dropping duplicate pre")
-        count_df_ids(df_pre)
-    df = pd.concat([df_pre, df_post])
+        count_df_ids(df_masked)
+    df = pd.concat([df_masked, df_not_masked])
+
+    ### I don't remember if this sort / sort order is strictly. necessary! Can test it..
+    partial_sort_keys = [i for i in groupCols if i != "StudyID"]  # group keys except for study ID,
+    #     df = df.sort_values(by=["StudyID","dcm_date","vertNum_bottom","vertNum_top"],ascending=True)## ORIG - broken if verts not present
+    df = df.sort_values(by=sortCols + partial_sort_keys, ascending=True)
+
+    return df
+
+
+def keep_latest_postop(df, groupCols=['StudyID', 'acquired_date', 'projection', 'bodyPos'], sortCols=['StudyID', 'dcm_date', 'projection', 'bodyPos'], verbose=False):
+    """
+    Keeps last preop row (and all other/postop rows), according to dcm_date
+    """
+    df = df.copy()
+    mask = df["acquired_date"] != "PreOp"
+    df.loc[:, "dcm_date"] = pd.to_datetime(df[ "dcm_date"], infer_datetime_format=True)
+    df_masked = df[mask].copy()
+
+    if verbose:
+        print("before dropping duplicate pre")
+        count_df_ids(df_masked)
+
+    df_not_masked = df[~mask]
+    df_masked = df_masked.sort_values(by=["dcm_date"], ascending=False)
+    df_masked = df_masked.drop_duplicates(subset=groupCols, keep="first")
+
+    if verbose:
+        print("after dropping duplicate pre")
+        count_df_ids(df_masked)
+    df = pd.concat([df_masked, df_not_masked])
 
     ### I don't remember if this sort / sort order is strictly. necessary! Can test it..
     partial_sort_keys = [i for i in groupCols if i != "StudyID"]  # group keys except for study ID,

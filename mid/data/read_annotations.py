@@ -76,7 +76,7 @@ def get_all_vert_anns(df, units='pixel'):
             ''.format(df.pixel_space_x.unique(), df.pixel_space_y.unique())
     pixel_spacing = (df.pixel_space_x.iloc[0], df.pixel_space_y.iloc[0])
 
-    metadata = {'dcm_date': str(df.iloc[0].dcm_date) if 'dcm_data' in df.columns else None,
+    metadata = {'dcm_date': str(df.iloc[0].dcm_date) if 'dcm_date' in df.columns else None,
                 'relative_file_path': df.iloc[0].relative_file_path if 'relative_file_path' in df.columns else None,
                 }
 
@@ -553,6 +553,8 @@ def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_d
         dicom_df = filter_anns_df(dicom_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
         assert len(dicom_df) == 1, 'only 1 dicom path should remain after filtering'
         dicom_path = dicom_df['dicom_path'].values[0]
+    else:
+        dicom_path = None
 
     # merge anns
     ann_dict = {**anns_vert, **anns_rod, **anns_screw, **anns_icl, **anns_femur}

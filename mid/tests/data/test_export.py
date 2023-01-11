@@ -16,7 +16,7 @@ pd.set_option('display.expand_frame_repr', False)
 def test_export_misrefresh_to_coco():
 
 	anns_type = 'implant'  # one of {'implant', 'vert_implant'}
-	vert_visibility_flag = 0 if anns_type is 'implant' else 2
+	vert_visibility_flag = 0 if anns_type == 'implant' else 2
 
 	# load dataset
 	test_data_path = Path(__file__).parents[1] / 'test_data'
