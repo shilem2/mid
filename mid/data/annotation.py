@@ -326,7 +326,7 @@ class Annotation(MutableMapping):
         plt.show(block=False)
 
 
-    def plot_annotations(self, fontsize=6, markersize=3, marker='.', plot_lines=True, plot_text=True, display=True, save_fig_name=None):
+    def plot_annotations(self, fontsize=6, markersize=3, marker='.', plot_lines=True, plot_text=True, title_str='', display=True, save_fig_name=None):
         """Plot annotations on top of image.
 
         Parameters
@@ -355,7 +355,8 @@ class Annotation(MutableMapping):
         img_path = self.dicom_path
         ann_dict = self.ann
 
-        title_str = dict2string(self.metadata)
+        if title_str == '':
+            title_str = dict2string(self.metadata)
         fig = plot_annotations(img_path, ann_dict, fontsize, markersize, plot_lines, plot_text, flip_img_lr=self.flipped_anns, marker=marker, title_str=title_str, show=display, save_fig_name=save_fig_name)
 
         if change_units:
