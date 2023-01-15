@@ -130,8 +130,8 @@ class MaccbiDataset(Dataset):
 
         assert not (latest_preop and latest_postop), 'at least on of latest_preop, latest_postop must be False!'
 
-        study_df = self.filter_study_id(study_id, key='vert_df', projection=projection, body_pose=body_pose)
-        df = study_df.drop_duplicates('file_id')
+        study_df = self.filter_study_id(study_id, key='dicom_df', projection=projection, body_pose=body_pose)
+        df = study_df.drop_duplicates('relative_file_path')
         if skip_flipped_anns:
             inds = df.x_sign != -1
             df = df[inds]
@@ -140,7 +140,7 @@ class MaccbiDataset(Dataset):
         elif latest_postop:
             df = keep_latest_postop(df, groupCols=['StudyID', 'acquired_date', 'projection', 'bodyPos'], sortCols=['StudyID', 'dcm_date', 'projection', 'bodyPos'], verbose=False)
 
-        df = df[['file_id', 'StudyID', 'projection', 'acquired_date', 'bodyPos', 'acquired', 'relative_file_path', 'x_sign']]  # use only most important columns
+        df = df[['file_id', 'StudyID', 'projection', 'acquired_date', 'bodyPos', 'acquired', 'relative_file_path', 'dicom_path', 'x_sign']]  # use only most important columns
 
         acquired_date_list = self.sort_acquired_dates(self.get_unique_val_list(df, 'acquired_date'))
 
@@ -178,19 +178,18 @@ class MaccbiDataset(Dataset):
                    ((body_pos is None) | (df.bodyPos == body_pos)) & \
                    ((acquired is None) | (df.acquired == acquired)) & \
                    ((acquired_date is None) | (df.acquired_date == acquired_date)) & \
+                   ((dicom_path is None) | (df.dicom_path == dicom_path)) & \
                    ((relative_file_path is None) | (df.relative_file_path == relative_file_path)) & \
-                   ((file_id is None) | (df.file_id == file_id))  # & \
-                   # ((dicom_path is None) | (df.dicom_path == dicom_path)) & \
-
+                   ((file_id is None) | (df.file_id == file_id))
         else:
             inds = ((study_id is None) | (df.StudyID != study_id)) & \
                    ((projection is None) | (df.projection != projection)) & \
                    ((body_pos is None) | (df.bodyPos != body_pos)) & \
                    ((acquired is None) | (df.acquired != acquired)) & \
                    ((acquired_date is None) | (df.acquired_date != acquired_date)) & \
+                   ((dicom_path is None) | (df.dicom_path != dicom_path)) & \
                    ((relative_file_path is None) | (df.relative_file_path != relative_file_path)) & \
-                   ((file_id is None) | (df.file_id != file_id))  # & \
-                   # ((dicom_path is None) | (df.dicom_path == dicom_path)) & \
+                   ((file_id is None) | (df.file_id != file_id))
 
         df_out = df[inds]
 
