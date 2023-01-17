@@ -10,7 +10,8 @@ pd.set_option('display.expand_frame_repr', False)
 
 def generate_maccabi_dicom_df():
 
-    rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/short2full.json'
+    # rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/short2full.json'
+    rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2023-08-10_merged_data_v2/dicom/short2full_dcm.json'
     # rel2full_path_file = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/short2full_dcm.json'
     dicom_pattern = '*.dcm'
     num_max = -1
@@ -48,8 +49,10 @@ def generate_maccabi_dicom_df():
 
 def add_fields_maccabi_dicom_df():
 
-    dicom_path = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/dicom_path_rel2full.parquet'
-    vert_path = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/vert/vert.parquet'
+    # dicom_path = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/dicom/dicom_path_rel2full.parquet'
+    # vert_path = '/mnt/magic_efs/moshe/implant_detection/data/2022-08-10_merged_data_v2/vert/vert.parquet'
+    dicom_path = '/mnt/magic_efs/moshe/implant_detection/data/2023-08-10_merged_data_v2/dicom/dicom_path_rel2full.parquet'
+    vert_path = '/mnt/magic_efs/moshe/implant_detection/data/2023-08-10_merged_data_v2/vert/vert.parquet'
 
     dicom_df = pd.read_parquet(dicom_path)
     vert_df = pd.read_parquet(vert_path)
