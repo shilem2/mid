@@ -86,6 +86,12 @@ def simple_preprocssing(img, process_type, keep_input_dtype=True, flip_lr=False,
     if process_type not in {'unsharp_mask', 'clahe1', 'clahe2', 'none'}:
         raise ValueError("process must be one of ['unsharp_mask', 'clahe1', 'clahe2', 'none'], got {}".format(process_type))
 
+    if keep_input_dtype:
+        img_min = img.min()
+        img_max = img.max()
+        img_dtype = img.dtype
+    img = adjust_dynamic_range(img, vmin=0., vmax=1., dtype='float')
+
     if process_type == 'unsharp_mask':
         img_out = unsharp_mask(img, radius=20, amount=1, preserve_range=True)
     elif process_type == 'clahe1':
@@ -94,7 +100,7 @@ def simple_preprocssing(img, process_type, keep_input_dtype=True, flip_lr=False,
         img_out = exposure.equalize_adapthist(img, kernel_size=140, clip_limit=0.03, nbins=256)
 
     if keep_input_dtype:
-        img_out = adjust_dynamic_range(img_out, vmin=img_out.min(), vmax=img_out.max(), dtype=img.dtype)
+        img_out = adjust_dynamic_range(img_out, vmin=img_min, vmax=img_max, dtype=img_dtype)
 
     if flip_lr:
         img_out = np.fliplr(img_out)

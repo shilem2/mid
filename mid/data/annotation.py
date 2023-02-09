@@ -115,7 +115,7 @@ class Annotation(MutableMapping):
 
         return
 
-    def values(self, order='xy', units=None, keys=None):
+    def values(self, order='xy', units=None, keys=None, s1_uppper_only=False):
         """Get annotation values as an array with specified order and units.
 
         Parameters
@@ -141,7 +141,10 @@ class Annotation(MutableMapping):
         if keys is None:
             keys = self.keys()
 
-        values = np.concatenate([self[key] for key in keys])  # xy, original units
+        if (s1_uppper_only == False) or ('S1' not in keys):
+            values = np.concatenate([self[key] for key in keys])  # xy, original units
+        else:
+            values = np.concatenate([self[key] if (key != 'S1') else self[key][0:2, :] for key in keys])  # xy, original units
 
         # convert units
         if (units is not None) and (units != self.units):
