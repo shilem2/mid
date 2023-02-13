@@ -93,7 +93,7 @@ def generate_3d_meta_df_example():
 
     meta_root_dir = 'm:/magic/output/Pre_post_CT_XR_cohort/'
     procedure_meta_file = 'm:/moshe/Maccabi_DB/postop_CT_WO_immediate.csv'
-    num_max = 30
+    num_max = -1
     output_dir_sfx = '_postop_ct_wo_immediate'
     output_df_file = 'm:/moshe/3d_prediction/results/3d_db/metadata_df_{}{}.parquet'.format(num_max if num_max > 0 else '', output_dir_sfx)
 

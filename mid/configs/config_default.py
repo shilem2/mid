@@ -17,5 +17,9 @@ data = {'pixel_spacing_override': None,
                                    }
         }
 
+data3d = {'meta_file': None,
+          }
+
 cfg = {'data': data,
+       'data3d': data3d,
        }
