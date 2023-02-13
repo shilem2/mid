@@ -2,24 +2,25 @@ import json
 from pathlib import Path
 from tqdm import tqdm
 import pandas as pd
+from datetime import datetime
 
 from mid.data import utils
 
 
-def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='Study.json',
-                             study_analysis_file='StudyAnalysis.json'):
+def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='Study.json', study_analysis_file='StudyAnalysis.json'):
+
     dir_path = Path(dir_path)
 
     patient = json.load(open(dir_path / patient_file))
     study = json.load(open(dir_path / study_file))
     study_analysis = json.load(open(dir_path / study_analysis_file))
 
-    study_id = patient['patientId']  # Maccabi study id
+    study_id = int(patient['patientId'])  # Maccabi study id
 
     metadata = {
         'study_id': study_id,
         'mongo_id': study['patientId'],  # Mongo DB id
-        'series_date': study['seriesDate'],
+        'series_date': datetime.strptime(study['seriesDate'], '%Y-%m-%dT%H:%M:%Sz').date(),  # convert string to datetime object, take only date
         'dir_path': dir_path.absolute().as_posix(),
         # 'study_analysis': study_analysis,
     }
@@ -73,10 +74,7 @@ def generate_metadata_df(root_dir, pattern='**/Patient.json', process_df_flag=Tr
 
 def process_df(df, relative_path_start=4, out_cols=['study_id', 'mongo_id', 'full_dir_path', 'relative_dir_path', 'dcm_date']):
 
-    df['study_id'] = df.study_id.astype(int)
     df['relative_dir_path'] = df['dir_path'].apply(lambda x: '/'.join(x.split('/')[relative_path_start:]))
-    df['dcm_date'] = pd.to_datetime(df['series_date'], format='%Y-%m-%dT%H:%M:%S')
-    df['dcm_date'] = df['dcm_date'].apply(lambda x: x.date())
     df.rename(columns={'dir_path': 'full_dir_path'}, inplace=True)
 
     df = df[out_cols]
