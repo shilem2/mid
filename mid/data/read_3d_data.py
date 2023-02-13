@@ -111,3 +111,14 @@ def filter_anns_df(df, study_id=None, mongo_id=None, relative_file_path=None, dc
 
     return df_out
 
+def read_procedures_file(file_path, out_cols=['study_id', 'surgery_date']):
+
+    df = pd.read_csv(file_path)
+
+    df['study_id'] = df['Patient'].astype(int)
+    df['surgery_date'] = pd.to_datetime(df['Surgery Date'], format='%m/%d/%Y')
+
+    df = df[out_cols]
+
+    return df
+
