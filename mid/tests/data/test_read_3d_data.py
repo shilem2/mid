@@ -1,6 +1,10 @@
 from pathlib import Path
+import pandas as pd
 
 from mid.data.read_3d_data import read_metadata_single_dir, read_metadata_root_dir, generate_metadata_df, process_df, filter_anns_df
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.expand_frame_repr', False)
 
 
 def test_read_metadata_single_dir():
@@ -37,13 +41,19 @@ def test_read_metadata_root_dir():
 
 def test_generate_metadata_df():
 
-    pass
+    base_dir = Path(__file__).parents[2]
+    root_dir = base_dir / 'tests' / 'test_data' / 'maccabi_ct_pipe'
 
-def test_process_df():
+    df = generate_metadata_df(root_dir, pattern='**/Patient.json', process_df_flag=True, num_max=-1, output_df_file=None)
 
-    pass
+    assert set(df.columns) == {'mongo_id', 'study_id', 'dcm_date', 'relative_dir_path', 'full_dir_path'}
+    assert df.shape == (10, 5)
 
-def test_filter_anns_df():
+    df1 = filter_anns_df(df, study_id=1003813)
+    assert df1.shape == (1, 5)
+
+    df2 = filter_anns_df(df, study_id=1023714)
+    assert df2.shape == (9, 5)
 
     pass
 
@@ -51,12 +61,7 @@ def test_filter_anns_df():
 if __name__ == '__main__':
 
     # test_read_metadata_single_dir()
-    test_read_metadata_root_dir()
+    # test_read_metadata_root_dir()
+    test_generate_metadata_df()
 
     pass
-
-
-
-
-
-
