@@ -1,7 +1,8 @@
 from pathlib import Path
 import pandas as pd
 
-from mid.data.read_3d_data import read_metadata_single_dir, read_metadata_root_dir, generate_metadata_df, process_df, filter_anns_df
+from mid.data.read_3d_data import read_metadata_single_dir, read_metadata_root_dir, generate_metadata_df, \
+    filter_anns_df, read_procedures_file
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.expand_frame_repr', False)
@@ -58,10 +59,40 @@ def test_generate_metadata_df():
     pass
 
 
+def test_calc_pre_post_op():
+
+    base_dir = Path(__file__).parents[2]
+    procedure_meta_file = base_dir / 'tests' / 'test_data' / 'all_postop_CT.csv'
+
+    procedure_df = read_procedures_file(procedure_meta_file)
+
+    root_dir = base_dir / 'tests' / 'test_data' / 'maccabi_ct_pipe_pre_post'
+    # root_dir = 'm:/magic/output/Pre_post_CT_XR_cohort/20220328072248/'
+    meta_df = generate_metadata_df(root_dir, pattern='**/Patient.json', process_df_flag=True, num_max=-1, output_df_file=None)
+
+    df = meta_df.merge(procedure_df, on=['study_id'])
+
+    df['is_preop'] = df['dcm_date'] < df['surgery_date']
+    df['is_postop'] = df['dcm_date'] >= df['surgery_date']
+
+    df[['study_id', 'surgery_date', 'dcm_date', 'is_preop', 'is_postop']]
+    df[df['is_preop'] == True]
+
+    assert df['is_preop'].sum() == 8
+    assert df['is_postop'].sum() == 35
+
+
+
+    df1 = filter_anns_df(df, study_id=1242288)
+
+
+    pass
+
 if __name__ == '__main__':
 
     # test_read_metadata_single_dir()
     # test_read_metadata_root_dir()
-    test_generate_metadata_df()
+    # test_generate_metadata_df()
+    test_calc_pre_post_op()
 
     pass
