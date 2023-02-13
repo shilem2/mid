@@ -1,0 +1,62 @@
+from pathlib import Path
+
+from mid.data.read_3d_data import read_metadata_single_dir, read_metadata_root_dir, generate_metadata_df, process_df, filter_anns_df
+
+
+def test_read_metadata_single_dir():
+
+    base_dir = Path(__file__).parents[2]
+    dir_path = base_dir / 'tests' / 'test_data' / 'maccabi_ct_pipe' / '1003813_1_2_9c4f7c2e-cdfd-457e-9e24-7895bde42c9c'
+
+    metadata, study_id = read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='Study.json', study_analysis_file='StudyAnalysis.json')
+
+    assert isinstance(study_id, int)
+    assert study_id == 1003813
+    assert set(metadata.keys()) == {'dir_path', 'mongo_id', 'study_id', 'series_date'}
+    assert metadata['study_id'] == 1003813
+    assert metadata['mongo_id'] == 'caf295f3-23e7-4029-af15-f0033a55606b'
+    assert metadata['series_date'].strftime('%Y-%m-%d') == '2006-08-10'
+
+    pass
+
+
+def test_read_metadata_root_dir():
+
+    base_dir = Path(__file__).parents[2]
+    root_dir = base_dir / 'tests' / 'test_data' / 'maccabi_ct_pipe'
+
+    metadata_dict = read_metadata_root_dir(root_dir, pattern='**/Patient.json')
+
+    assert set(metadata_dict.keys()) == {1003813, 1023714}
+    assert len(metadata_dict[1003813]) == 1
+    assert len(metadata_dict[1023714]) == 9
+    assert metadata_dict[1023714][8]['series_date'].strftime('%Y-%m-%d') == '2008-01-12'
+
+    pass
+
+
+def test_generate_metadata_df():
+
+    pass
+
+def test_process_df():
+
+    pass
+
+def test_filter_anns_df():
+
+    pass
+
+
+if __name__ == '__main__':
+
+    # test_read_metadata_single_dir()
+    test_read_metadata_root_dir()
+
+    pass
+
+
+
+
+
+
