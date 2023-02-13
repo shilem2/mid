@@ -4,10 +4,11 @@ from tqdm import tqdm
 import pandas as pd
 from datetime import datetime
 
-from mid.data import utils
-
 
 def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='Study.json', study_analysis_file='StudyAnalysis.json'):
+    """
+    Read metadata of CT pipe output - single directory
+    """
 
     dir_path = Path(dir_path)
 
@@ -29,9 +30,14 @@ def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='
 
 
 def read_metadata_root_dir(root_dir, pattern='**/Patient.json'):
+    """
+    Read metadata of CT pipe output - all directories under root_dir
+    this function returns a dict, it is recommended to use generate_metadata_df() which returns DataFrame.
+    """
+
 
     paths = Path(root_dir).rglob(pattern)
-    # path_list = list(paths)
+    # path_list = list(paths)  # takes long time
 
     metadata_dict = {}
     for path in tqdm(paths):
@@ -47,6 +53,10 @@ def read_metadata_root_dir(root_dir, pattern='**/Patient.json'):
 
 
 def generate_metadata_df(root_dir, pattern='**/Patient.json', process_df_flag=True, num_max=-1, output_df_file=None):
+    """
+    Read metadata of CT pipe output - all directories under root_dir
+    returns DataFrame.
+    """
 
     paths = Path(root_dir).rglob(pattern)
     # path_list = list(paths)
@@ -73,9 +83,12 @@ def generate_metadata_df(root_dir, pattern='**/Patient.json', process_df_flag=Tr
 
 
 def process_df(df, relative_path_start=4, out_cols=['study_id', 'mongo_id', 'full_dir_path', 'relative_dir_path', 'dcm_date']):
+    """
+    Process df.
+    """
 
     df['relative_dir_path'] = df['dir_path'].apply(lambda x: '/'.join(x.split('/')[relative_path_start:]))
-    df.rename(columns={'dir_path': 'full_dir_path'}, inplace=True)
+    df.rename(columns={'dir_path': 'full_dir_path', 'series_date': 'dcm_date'}, inplace=True)
 
     df = df[out_cols]
 
