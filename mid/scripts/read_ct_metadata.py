@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
 from mid.data import utils
-from mid.data.read_3d_data import read_metadata_single_dir, read_metadata_root_dir, generate_metadata_df, filter_anns_df
+from mid.data.read_3d_data import read_metadata_single_dir, read_metadata_root_dir, generate_metadata_df, filter_anns_df, generate_3d_meta_df
 from mid.data import MaccbiDataset
 
 pd.set_option('display.max_columns', None)
@@ -89,12 +89,25 @@ def read_xr_data():
     pass
 
 
+def generate_3d_meta_df_example():
+
+    meta_root_dir = 'm:/magic/output/Pre_post_CT_XR_cohort/'
+    procedure_meta_file = 'm:/moshe/Maccabi_DB/postop_CT_WO_immediate.csv'
+    num_max = 30
+    output_dir_sfx = '_postop_ct_wo_immediate'
+    output_df_file = 'm:/moshe/3d_prediction/results/3d_db/metadata_df_{}{}.parquet'.format(num_max if num_max > 0 else '', output_dir_sfx)
+
+    df = generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=output_df_file, pattern='**/Patient.json', num_max=num_max)
+
+    pass
+
 
 if __name__ == '__main__':
 
     # read_metadata_single_dir_example()
     # read_metadata_root_dir_example()
-    generate_metadata_df_example()
-    read_xr_data()
+    # generate_metadata_df_example()
+    # read_xr_data()
+    generate_3d_meta_df_example()
 
     pass

@@ -95,6 +95,39 @@ def process_df(df, relative_path_start=4, out_cols=['study_id', 'mongo_id', 'ful
     return df
 
 
+
+def read_procedures_file(file_path, out_cols=['study_id', 'surgery_date']):
+
+    df = pd.read_csv(file_path)
+
+    df['study_id'] = df['Patient'].astype(int)
+    df['surgery_date'] = pd.to_datetime(df['Surgery Date'], format='%m/%d/%Y')
+
+    df = df[out_cols]
+
+    return df
+
+
+def generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=None, pattern='**/Patient.json', num_max=-1):
+    """
+    Generate unified metadata df, contains both metadata of CT pipe output, procedure date and pre/post-op flags.
+    """
+
+    procedure_df = read_procedures_file(procedure_meta_file)
+
+    meta_df = generate_metadata_df(meta_root_dir, pattern=pattern, process_df_flag=True, num_max=num_max, output_df_file=output_df_file)
+
+    df = meta_df.merge(procedure_df, on=['study_id'])
+
+    df['is_preop'] = df['dcm_date'] < df['surgery_date']
+    df['is_postop'] = df['dcm_date'] >= df['surgery_date']
+
+    if output_df_file is not None:
+        df.to_parquet(output_df_file)
+
+    return df
+
+
 def filter_anns_df(df, study_id=None, mongo_id=None, relative_file_path=None, dcm_date=None):
     """
     Filter annotations data frame.
@@ -110,15 +143,4 @@ def filter_anns_df(df, study_id=None, mongo_id=None, relative_file_path=None, dc
     df_out = df[inds]
 
     return df_out
-
-def read_procedures_file(file_path, out_cols=['study_id', 'surgery_date']):
-
-    df = pd.read_csv(file_path)
-
-    df['study_id'] = df['Patient'].astype(int)
-    df['surgery_date'] = pd.to_datetime(df['Surgery Date'], format='%m/%d/%Y')
-
-    df = df[out_cols]
-
-    return df
 
