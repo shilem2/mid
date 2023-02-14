@@ -68,12 +68,14 @@ def test_generate_3d_meta_df():
 
     df = generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=None)
 
-    assert df.shape == (43, 8)
+    assert df.shape == (43, 9)
     assert df['is_preop'].sum() == 8
     assert df['is_postop'].sum() == 35
 
     df1 = filter_anns_df(df, study_id=1242288)
-    assert df1.shape == (27, 8)
+    assert df1.shape == (27, 9)
+    assert df1.loc[16, 'days_after_surgery'] == -60
+    assert df1.loc[42, 'days_after_surgery'] == 618
 
     pass
 

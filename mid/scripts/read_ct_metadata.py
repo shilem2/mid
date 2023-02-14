@@ -100,7 +100,8 @@ def generate_3d_meta_df_example():
     # meta_root_dir = 'm:/magic/output/pre_post_ct_not_in_XR_cohort/'
     # output_dir_sfx = '_pre_post_ct_not_in_XR_cohort'
 
-    num_max = -1
+    # num_max = -1
+    num_max = 50
     output_df_file = 'm:/moshe/3d_prediction/results/3d_db/metadata_df_{}{}.parquet'.format(num_max if num_max > 0 else '', output_dir_sfx)
 
     df = generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=output_df_file, pattern='**/Patient.json', num_max=num_max)
