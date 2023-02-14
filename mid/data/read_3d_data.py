@@ -21,7 +21,7 @@ def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='
     metadata = {
         'study_id': study_id,
         'mongo_id': study['patientId'],  # Mongo DB id
-        'series_date': datetime.strptime(study['seriesDate'], '%Y-%m-%dT%H:%M:%Sz').date(),  # convert string to datetime object, take only date
+        'series_date': datetime.strptime(study['seriesDate'], '%Y-%m-%dT%H:%M:%Sz'),  # convert string to datetime object
         'dir_path': dir_path.absolute().as_posix(),
         # 'study_analysis': study_analysis,
     }
@@ -88,6 +88,7 @@ def process_df(df, relative_path_start=4, out_cols=['study_id', 'mongo_id', 'ful
 
     df['relative_dir_path'] = df['dir_path'].apply(lambda x: '/'.join(x.split('/')[relative_path_start:]))
     df.rename(columns={'dir_path': 'full_dir_path', 'series_date': 'dcm_date'}, inplace=True)
+    df['dcm_date'] = pd.to_datetime(df['dcm_date'], errors='coerce')
 
     df = df[out_cols]
 
@@ -100,7 +101,7 @@ def read_procedures_file(file_path, out_cols=['study_id', 'surgery_date']):
     df = pd.read_csv(file_path)
 
     df['study_id'] = df['Patient'].astype(int)
-    df['surgery_date'] = pd.to_datetime(df['Surgery Date'], format='%m/%d/%Y')
+    df['surgery_date'] = pd.to_datetime(df['Surgery Date'], format='%m/%d/%Y', errors='coerce')
 
     df = df[out_cols]
 
@@ -118,8 +119,11 @@ def generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=None,
 
     df = meta_df.merge(procedure_df, on=['study_id'])
 
+    # calculate interesting values
     df['is_preop'] = df['dcm_date'] < df['surgery_date']
     df['is_postop'] = df['dcm_date'] >= df['surgery_date']
+    df['days_after_surgery'] = df['dcm_date'] - df['surgery_date']
+    df['days_after_surgery'] = df['days_after_surgery'].apply(lambda x: x.days)
 
     if output_df_file is not None:
         df.to_parquet(output_df_file)
