@@ -91,10 +91,16 @@ def read_xr_data():
 
 def generate_3d_meta_df_example():
 
-    meta_root_dir = 'm:/magic/output/Pre_post_CT_XR_cohort/'
     procedure_meta_file = 'm:/moshe/Maccabi_DB/postop_CT_WO_immediate.csv'
-    num_max = -1
+    # procedure_meta_file = 'm:/moshe/Maccabi_DB/postop_CT_all.csv'
+
+    meta_root_dir = 'm:/magic/output/Pre_post_CT_XR_cohort/'
     output_dir_sfx = '_postop_ct_wo_immediate'
+
+    # meta_root_dir = 'm:/magic/output/pre_post_ct_not_in_XR_cohort/'
+    # output_dir_sfx = '_pre_post_ct_not_in_XR_cohort'
+
+    num_max = -1
     output_df_file = 'm:/moshe/3d_prediction/results/3d_db/metadata_df_{}{}.parquet'.format(num_max if num_max > 0 else '', output_dir_sfx)
 
     df = generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=output_df_file, pattern='**/Patient.json', num_max=num_max)
@@ -109,5 +115,6 @@ if __name__ == '__main__':
     # generate_metadata_df_example()
     # read_xr_data()
     generate_3d_meta_df_example()
+
 
     pass

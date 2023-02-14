@@ -35,7 +35,6 @@ def read_metadata_root_dir(root_dir, pattern='**/Patient.json'):
     this function returns a dict, it is recommended to use generate_metadata_df() which returns DataFrame.
     """
 
-
     paths = Path(root_dir).rglob(pattern)
     # path_list = list(paths)  # takes long time
 
