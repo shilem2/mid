@@ -4,6 +4,11 @@ from tqdm import tqdm
 import pandas as pd
 from datetime import datetime
 
+VERT_NAMES = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+              'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
+              'L1', 'L2', 'L3', 'L4', 'L5', 'L6',
+              'S1', 'S2', 'S3', 'S4', 'S5',
+              ]
 
 def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='Study.json', study_analysis_file='StudyAnalysis.json'):
     """
@@ -23,10 +28,43 @@ def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='
         'mongo_id': study['patientId'],  # Mongo DB id
         'series_date': datetime.strptime(study['seriesDate'], '%Y-%m-%dT%H:%M:%Sz'),  # convert string to datetime object
         'dir_path': dir_path.absolute().as_posix(),
-        # 'study_analysis': study_analysis,
     }
 
+    study_analysis_data = extract_study_analysis_data(study_analysis)
+    metadata.update(study_analysis_data)
+
     return metadata, study_id
+
+def extract_study_analysis_data(study_analysis, merge_type='union'):
+
+    # currently labels are found in 2 places inside study_analysis
+    vert_labels_metadata = [v['label'] for v in study_analysis['metadata']['vertInfo']]  # RTC's calculations
+    vert_labels_vert_list = [v['label'] for v in study_analysis['labels']['vertList']]  # Kfir's calculations
+
+    assert merge_type in ['union', 'intersection']
+    if merge_type == 'union':
+        vert_labels = list(set(vert_labels_metadata) | set(vert_labels_vert_list))
+    elif merge_type == 'intersection':
+        vert_labels = list(set(vert_labels_metadata) & set(vert_labels_vert_list))
+
+    vert_labels = sort_keys_by_names(vert_labels)
+
+    study_analysis_data = {
+        'vert_labels': vert_labels,
+    }
+
+    return study_analysis_data
+
+
+def sort_keys_by_names(keys, wanted_order=VERT_NAMES):
+    """Sort keys by wanted order.
+    """
+    indices_ordered = list(range(len(wanted_order)))
+    zipped_sorted_ind_vert = list(zip(indices_ordered, wanted_order))
+    indices = sorted([ind for (ind, key) in zipped_sorted_ind_vert if key in keys])  # indices of input keys
+    keys_ordered = [wanted_order[ind] for ind in indices]
+
+    return keys_ordered
 
 
 def read_metadata_root_dir(root_dir, pattern='**/Patient.json'):
@@ -81,7 +119,7 @@ def generate_metadata_df(root_dir, pattern='**/Patient.json', process_df_flag=Tr
     return df
 
 
-def process_df(df, relative_path_start=4, out_cols=['study_id', 'mongo_id', 'full_dir_path', 'relative_dir_path', 'dcm_date']):
+def process_df(df, relative_path_start=4, out_cols=['study_id', 'mongo_id', 'full_dir_path', 'relative_dir_path', 'dcm_date', 'vert_labels']):
     """
     Process df.
     """
