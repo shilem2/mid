@@ -61,7 +61,7 @@ class Maccbi3dDataset(Dataset):
                ((relative_file_path is None) or (df.relative_file_path == relative_file_path)) & \
                ((dcm_date is None) or (df.dcm_date == dcm_date)) & \
                ((surgery_date is None) or (df.surgery_date == surgery_date)) & \
-               ((is_preop is None) or (df.dcm_date == is_preop)) & \
+               ((is_preop is None) or (df.is_preop == is_preop)) & \
                ((is_postop is None) or (df.is_postop == is_postop))
 
         df_out = df[inds]
