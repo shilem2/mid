@@ -26,7 +26,7 @@ def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='
     metadata = {
         'study_id': study_id,
         'mongo_id': study['patientId'],  # Mongo DB id
-        'series_date': datetime.strptime(study['seriesDate'], '%Y-%m-%dT%H:%M:%Sz'),  # convert string to datetime object
+        'series_date': parse_date_string(study['seriesDate']),
         'dir_path': dir_path.absolute().as_posix(),
     }
 
@@ -34,6 +34,23 @@ def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='
     metadata.update(study_analysis_data)
 
     return metadata, study_id
+
+def parse_date_string(date_str):
+    """
+    Convert string to datetime object.
+    """
+
+    try:
+        dt = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%z')
+    except:
+        try:
+            dt = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%fz')  # with micro-seconds %f
+        except:
+            dt = date_str
+
+    return dt
+
+
 
 def extract_study_analysis_data(study_analysis, merge_type='union'):
 
@@ -89,24 +106,33 @@ def read_metadata_root_dir(root_dir, pattern='**/Patient.json'):
     return metadata_dict
 
 
-def generate_metadata_df(root_dir, pattern='**/Patient.json', process_df_flag=True, num_max=-1, output_df_file=None):
+def generate_metadata_df(root_dir_list, pattern='**/Patient.json', process_df_flag=True, num_max=-1, output_df_file=None, subdirs_list=[]):
     """
     Read metadata of CT pipe output - all directories under root_dir
     returns DataFrame.
     """
 
-    paths = Path(root_dir).rglob(pattern)
-    # path_list = list(paths)
+    if not isinstance(root_dir_list, list):
+        root_dir_list = [root_dir_list]
+
 
     srs = []
-    for n, path in tqdm(enumerate(paths)):
+    n = 0
+    for root_dir in tqdm(root_dir_list, desc='root dir'):
 
-        metadata, study_id = read_metadata_single_dir(path.parent)
-        sr = pd.Series(metadata)
-        srs.append(sr)
+        paths = Path(root_dir).rglob(pattern)
+        # path_list = list(paths)
 
-        if (num_max > 0) and (n >= (num_max - 1)):
-            break
+        for path in tqdm(paths, desc='path'):
+
+            metadata, study_id = read_metadata_single_dir(path.parent)
+            sr = pd.Series(metadata)
+            srs.append(sr)
+
+            if (num_max > 0) and (n >= (num_max - 1)):
+                break
+
+            n += 1
 
     df = pd.concat(srs, axis=1).transpose()
 
@@ -126,7 +152,7 @@ def process_df(df, relative_path_start=4, out_cols=['study_id', 'mongo_id', 'ful
 
     df['relative_dir_path'] = df['dir_path'].apply(lambda x: '/'.join(x.split('/')[relative_path_start:]))
     df.rename(columns={'dir_path': 'full_dir_path', 'series_date': 'dcm_date'}, inplace=True)
-    df['dcm_date'] = pd.to_datetime(df['dcm_date'], errors='coerce')
+    df['dcm_date'] = pd.to_datetime(df['dcm_date'], errors='coerce').dt.date
 
     df = df[out_cols]
 
@@ -139,7 +165,7 @@ def read_procedures_file(file_path, out_cols=['study_id', 'surgery_date']):
     df = pd.read_csv(file_path)
 
     df['study_id'] = df['Patient'].astype(int)
-    df['surgery_date'] = pd.to_datetime(df['Surgery Date'], format='%m/%d/%Y', errors='coerce')
+    df['surgery_date'] = pd.to_datetime(df['Surgery Date'], format='%m/%d/%Y', errors='coerce').dt.date
 
     df = df[out_cols]
 
@@ -164,7 +190,8 @@ def generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=None,
     df['days_after_surgery'] = df['days_after_surgery'].apply(lambda x: x.days)
 
     if output_df_file is not None:
-        df.to_parquet(output_df_file)
+        df.to_parquet(Path(output_df_file).with_suffix('.parquet'))
+        df.to_csv(Path(output_df_file).with_suffix('.csv'))
 
     return df
 
