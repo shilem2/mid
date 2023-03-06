@@ -3,6 +3,7 @@ from pathlib import Path
 from tqdm import tqdm
 import pandas as pd
 from datetime import datetime
+import numpy as np
 
 VERT_NAMES = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
               'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
@@ -192,6 +193,12 @@ def generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=None,
     if output_df_file is not None:
         df.to_parquet(Path(output_df_file).with_suffix('.parquet'))
         df.to_csv(Path(output_df_file).with_suffix('.csv'))
+
+    # debug - save unique study_ids
+    np.savetxt(Path(output_df_file).parent / 'study_ids_procedure.csv', procedure_df.study_id.unique(), delimiter='\n'); print(len(procedure_df.study_id.unique()))
+    np.savetxt(Path(output_df_file).parent / 'study_ids_ct_pipe.csv', meta_df.study_id.unique(), delimiter='\n'); print(len(meta_df.study_id.unique()))
+    np.savetxt(Path(output_df_file).parent / 'study_ids_intersection.csv', df.study_id.unique(), delimiter='\n'); print(len(df.study_id.unique()))
+    np.savetxt(Path(output_df_file).parent / 'study_ids_diff.csv', np.array(list(set(procedure_df.study_id.unique()) - set(df.study_id.unique()))), delimiter='\n'); print(len(np.array(list(set(procedure_df.study_id.unique()) - set(df.study_id.unique())))))
 
     return df
 
