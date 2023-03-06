@@ -94,11 +94,11 @@ def generate_3d_meta_df_example():
     procedure_meta_file = 'm:/moshe/Maccabi_DB/postop_CT_WO_immediate.csv'
     # procedure_meta_file = 'm:/moshe/Maccabi_DB/postop_CT_all.csv'
 
-    # meta_root_dir = 'm:/magic/output/Pre_post_CT_XR_cohort/'
-    meta_root_dir = ['m:/magic/output/Pre_post_CT_XR_cohort/20220328072248/',
-                     'm:/magic/output/Pre_post_CT_XR_cohort/20220329090743/',
-                     'm:/magic/output/Pre_post_CT_XR_cohort/20220330060340/',
-                     ]
+    meta_root_dir = 'm:/magic/output/Pre_post_CT_XR_cohort/'
+    # meta_root_dir = ['m:/magic/output/Pre_post_CT_XR_cohort/20220328072248/',
+    #                  'm:/magic/output/Pre_post_CT_XR_cohort/20220329090743/',
+    #                  'm:/magic/output/Pre_post_CT_XR_cohort/20220330060340/',
+    #                  ]
     output_dir_sfx = '_postop_ct_wo_immediate'
 
     # meta_root_dir = 'm:/magic/output/pre_post_ct_not_in_XR_cohort/'
