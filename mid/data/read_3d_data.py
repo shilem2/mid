@@ -4,10 +4,17 @@ from tqdm import tqdm
 import pandas as pd
 from datetime import datetime
 import numpy as np
+import numbers
 
 VERT_NAMES = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
               'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
               'L1', 'L2', 'L3', 'L4', 'L5', 'L6',
+              'S1', 'S2', 'S3', 'S4', 'S5',
+              ]
+
+VERT_NAMES_WO_L6 = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
+              'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
+              'L1', 'L2', 'L3', 'L4', 'L5',
               'S1', 'S2', 'S3', 'S4', 'S5',
               ]
 
@@ -31,7 +38,7 @@ def read_metadata_single_dir(dir_path, patient_file='Patient.json', study_file='
         'dir_path': dir_path.absolute().as_posix(),
     }
 
-    study_analysis_data = extract_study_analysis_data(study_analysis)
+    study_analysis_data = extract_study_analysis_data(study_analysis, metadata['dir_path'])
     metadata.update(study_analysis_data)
 
     return metadata, study_id
@@ -53,17 +60,20 @@ def parse_date_string(date_str):
 
 
 
-def extract_study_analysis_data(study_analysis, merge_type='union'):
+def extract_study_analysis_data(study_analysis, mesh_dir, merge_type='complete_label_by_mesh'):
 
     # currently labels are found in 2 places inside study_analysis
     vert_labels_metadata = [v['label'] for v in study_analysis['metadata']['vertInfo']]  # RTC's calculations
     vert_labels_vert_list = [v['label'] for v in study_analysis['labels']['vertList']]  # Kfir's calculations
 
-    assert merge_type in ['union', 'intersection']
+    assert merge_type in ['union', 'intersection', 'complete_label_by_mesh']
     if merge_type == 'union':
         vert_labels = list(set(vert_labels_metadata) | set(vert_labels_vert_list))
     elif merge_type == 'intersection':
         vert_labels = list(set(vert_labels_metadata) & set(vert_labels_vert_list))
+    elif merge_type == 'complete_label_by_mesh':
+        vert_id2label, vert_label2id = map_vert_mesh_labels(mesh_dir, study_analysis)
+        vert_labels = list(vert_label2id.keys())
 
     vert_labels = sort_keys_by_names(vert_labels)
 
@@ -73,10 +83,73 @@ def extract_study_analysis_data(study_analysis, merge_type='union'):
 
     return study_analysis_data
 
+def map_vert_mesh_labels(mesh_dir, study_analysis):
 
-def sort_keys_by_names(keys, wanted_order=VERT_NAMES):
+    # RTC's map
+    vert_info_id2label = {v['maskVertId']: v['label'] for v in study_analysis['metadata']['vertInfo']}
+    vert_info_id2label = {}
+    for v in study_analysis['metadata']['vertInfo']:
+        id = v['maskVertId']
+        label = v['label']
+        if isinstance(id, numbers.Number) and (label in VERT_NAMES):
+            vert_info_id2label[id] = label
+
+    # try to complete missing ids in RTC's map
+    # ------------------------------------------
+
+    # get list of all meshes id
+    vert_ids = []
+    for p in Path(mesh_dir).glob('*.obj'):
+        try:
+            vert_id = int(p.stem.split('_')[-1])
+            vert_ids.append(vert_id)
+        except:
+            pass
+
+    vert_ids.sort()
+    vert_id2label = {vert_id: None for vert_id in vert_ids}
+
+    # initialize ids with RTC's map
+    for id, label in vert_info_id2label.items():
+        if id > 100:
+            vert_id2label[id] = label
+    vert_label2id = {label: id for id, label in vert_id2label.items() if label is not None}
+
+    # complete missing values
+    labels = [label for id, label in vert_id2label.items() if label in VERT_NAMES]
+
+    if len(labels) > 0:
+        labels = sort_keys_by_names(labels)
+        vert_names = VERT_NAMES if 'L6' in labels else VERT_NAMES_WO_L6
+        labels2global_vert_ids_dict = sublist_search(vert_names, labels)
+        labels2ids_dict = {label: vert_label2id[label] for label in labels2global_vert_ids_dict.keys()}
+
+        label_ref = labels[0]
+        for id, label in vert_id2label.items():
+            if label is None:
+                diff = labels2ids_dict[label_ref] - id
+                id_new = labels2global_vert_ids_dict[label_ref] + diff
+                if len(vert_names) > id_new:
+                    label = vert_names[id_new]
+                    vert_id2label[id] = label
+
+    vert_label2id = {label: id for id, label in vert_id2label.items() if label is not None}
+
+    return vert_id2label, vert_label2id
+
+
+def sublist_search(mylist, pattern):
+    """Search for indices for pattern in mylist"""
+    pattern = set(pattern)
+    return {x: n for n, x in enumerate(mylist) if x in pattern}
+
+
+def sort_keys_by_names(keys):
     """Sort keys by wanted order.
     """
+
+    wanted_order = VERT_NAMES if 'L6' in keys else VERT_NAMES_WO_L6
+
     indices_ordered = list(range(len(wanted_order)))
     zipped_sorted_ind_vert = list(zip(indices_ordered, wanted_order))
     indices = sorted([ind for (ind, key) in zipped_sorted_ind_vert if key in keys])  # indices of input keys
@@ -115,7 +188,6 @@ def generate_metadata_df(root_dir_list, pattern='**/Patient.json', process_df_fl
 
     if not isinstance(root_dir_list, list):
         root_dir_list = [root_dir_list]
-
 
     srs = []
     n = 0
@@ -180,7 +252,7 @@ def generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=None,
 
     procedure_df = read_procedures_file(procedure_meta_file)
 
-    meta_df = generate_metadata_df(meta_root_dir, pattern=pattern, process_df_flag=True, num_max=num_max, output_df_file=output_df_file)
+    meta_df = generate_metadata_df(meta_root_dir, pattern=pattern, process_df_flag=True, num_max=num_max, output_df_file=None)
 
     df = meta_df.merge(procedure_df, on=['study_id'])
 
