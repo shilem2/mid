@@ -1,6 +1,7 @@
 import pickle
 import blosc
 import numpy as np
+import datetime
 
 
 def save_compressed_pickle(data, filename):
@@ -24,6 +25,8 @@ def load_compressed_pickle(filename):
 def convert_array_to_json(x):
     if hasattr(x, "tolist"):  # numpy arrays have this
         return {"$array": x.tolist()}  # Make a tagged object
+    if isinstance(x, datetime.date):
+        return {"$date": x.isoformat()}
     raise TypeError(x)
 
 
@@ -32,4 +35,6 @@ def convert_json_to_array(x):
         key, value = next(iter(x.items()))  # Grab the tag and value
         if key == "$array":  # If the tag is correct,
             return np.array(value)  # cast back to array
+        if key == "$date":
+            return datetime.datetime.strptime(value, '%Y-%m-%d').date()
     return x
