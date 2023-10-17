@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import json
+import platform
 from mid.data import Annotation
 
 def load_anns_df(anns_dir):
@@ -553,6 +554,8 @@ def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_d
         dicom_df = filter_anns_df(dicom_df, study_id, projection, body_pos, acquired, acquired_date, file_id, relative_file_path)
         assert len(dicom_df) == 1, 'only 1 dicom path should remain after filtering'
         dicom_path = dicom_df['dicom_path'].values[0]
+        if platform.system() == 'Windows':
+            dicom_path = dicom_path.replace('/media/MazorData', 'M:')
     else:
         dicom_path = None
 

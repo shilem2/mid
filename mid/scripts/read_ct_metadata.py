@@ -99,13 +99,14 @@ def generate_3d_meta_df_example():
     #                  'm:/magic/output/Pre_post_CT_XR_cohort/20220329090743/',
     #                  'm:/magic/output/Pre_post_CT_XR_cohort/20220330060340/',
     #                  ]
-    output_dir_sfx = '_postop_ct_wo_immediate'
+    # output_dir_sfx = '_postop_ct_wo_immediate'
+    output_dir_sfx = '_example'
 
     # meta_root_dir = 'm:/magic/output/pre_post_ct_not_in_XR_cohort/'
     # output_dir_sfx = '_pre_post_ct_not_in_XR_cohort'
 
     num_max = -1
-    # num_max = 100
+    # num_max = 200
     output_df_file = 'm:/moshe/3d_prediction/results/3d_db/metadata_df_{}{}.parquet'.format(num_max if num_max > 0 else '', output_dir_sfx)
 
     df = generate_3d_meta_df(meta_root_dir, procedure_meta_file, output_df_file=output_df_file, pattern='**/Patient.json', num_max=num_max)
