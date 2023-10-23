@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
 
+sitk.ProcessObject_SetGlobalWarningDisplay(False)  # suppress warnings
+
 from mid.data.image_processing import simple_preprocssing
 
 
@@ -485,7 +487,7 @@ def plot_annotations(img_path, ann_dict, fontsize=6, markersize=3, plot_lines=Tr
 
     return fig
 
-def plot_ann(fig, ann, text, color='r', marker='x', markersize=3, fontsize=6, plot_lines=True, plot_text=True, linestyle='-'):
+def plot_ann(fig, ann, text, color='r', marker='x', markersize=3, fontsize=6, plot_lines=True, plot_text=True, linestyle='-', linewidth=0.75):
 
     ax = fig.get_axes()[0]
     if marker is not None:
@@ -500,7 +502,7 @@ def plot_ann(fig, ann, text, color='r', marker='x', markersize=3, fontsize=6, pl
     # plot lines between pairs of annotations
     if plot_lines:
         for n in range(0, ann.shape[0], 2):  # jump 2 rows at a time
-            ax.plot(ann[n:n + 2, 0], ann[n:n + 2, 1], color=color, linestyle=linestyle, linewidth=0.75)
+            ax.plot(ann[n:n + 2, 0], ann[n:n + 2, 1], color=color, linestyle=linestyle, linewidth=linewidth)
 
 
     return fig
