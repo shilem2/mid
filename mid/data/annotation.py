@@ -117,7 +117,7 @@ class Annotation(MutableMapping):
 
         return
 
-    def values(self, order='xy', units=None, keys=None, s1_upper_only=False):
+    def values(self, order='xy', units=None, keys=None, s1_upper_only=True):
         """Get annotation values as an array with specified order and units.
 
         Parameters
@@ -133,6 +133,9 @@ class Annotation(MutableMapping):
         keys : list, optional
             List of keys of which values will be outputted.
             If None, self.keys() will be used.
+        s1_upper_only : bool, optional
+            If True, only upper enplate of s1 will be used.
+            This is useful since in many cases lower endplate of s1 cannot be annotated properly.
 
         Returns
         -------
