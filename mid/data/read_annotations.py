@@ -47,7 +47,7 @@ def get_all_vert_anns(df, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -95,7 +95,7 @@ def get_single_vert_anns(df, vert_name, units='pixel'):
         Wanted vertebrae name.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -114,17 +114,17 @@ def get_single_vert_anns(df, vert_name, units='pixel'):
 
     # df = hack_fix_scientific_pixel_spacing(df)  # FIXME: hack for maccabi data, should fix earlier in the data pipe and remove from here in the future
 
-    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm
+    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given in pixel
 
     anns = anns.reshape(-1, 2)  # [x, y]
 
-    if units == 'pixel':  # convert values from mm to pixels
+    if units == 'mm':  # convert values from mm to pixels
         pixel_space_x = df.pixel_space_x.values  # [mm / pix]
         pixel_space_y = df.pixel_space_y.values
 
         # convert values from mm to pixels
-        anns[:, 0] /= pixel_space_x  # x
-        anns[:, 1] /= pixel_space_y  # y
+        anns[:, 0] *= pixel_space_x  # x
+        anns[:, 1] *= pixel_space_y  # y
 
     return anns
 
@@ -166,7 +166,7 @@ def get_all_screw_anns(df, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -211,7 +211,7 @@ def get_single_screw_anns(df, id, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -228,17 +228,17 @@ def get_single_screw_anns(df, id, units='pixel'):
         ids = id
 
     anns_colums = ['screwSt_x', 'screwSt_y', 'screwEnd_x', 'screwEnd_y']
-    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm
+    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im pixel
     anns = anns.reshape(-1, 2)  # [x, y]
     name = df['vertName'].values[0] if 'vertName' in df.columns else ''
 
-    if units == 'pixel':  # convert values from mm to pixels
+    if units == 'mm':  # convert values from mm to pixels
         pixel_space_x = df.pixel_space_x.values  # [mm / pix]
         pixel_space_y = df.pixel_space_y.values
 
         # convert values from mm to pixels
-        anns[:, 0] /= pixel_space_x  # x
-        anns[:, 1] /= pixel_space_y  # y
+        anns[:, 0] *= pixel_space_x  # x
+        anns[:, 1] *= pixel_space_y  # y
 
     return anns, name, ids
 
@@ -252,7 +252,7 @@ def get_all_rod_anns(df, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -298,7 +298,7 @@ def get_single_rod_anns(df, id, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -315,17 +315,17 @@ def get_single_rod_anns(df, id, units='pixel'):
         ids = id
 
     anns_colums = ['rodSt_x', 'rodSt_y', 'rodEnd_x', 'rodEnd_y']
-    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm
+    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im pixel
     anns = anns.reshape(-1, 2)  # [x, y]
     name = df['vertName'].values[0] if 'vertName' in df.columns else ''
 
-    if units == 'pixel':  # convert values from mm to pixels
+    if units == 'mm':  # convert values from mm to pixels
         pixel_space_x = df.pixel_space_x.values  # [mm / pix]
         pixel_space_y = df.pixel_space_y.values
 
         # convert values from mm to pixels
-        anns[:, 0] /= pixel_space_x  # x
-        anns[:, 1] /= pixel_space_y  # y
+        anns[:, 0] *= pixel_space_x  # x
+        anns[:, 1] *= pixel_space_y  # y
 
     return anns, name, ids
 
@@ -339,7 +339,7 @@ def get_all_icl_anns(df, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -380,7 +380,7 @@ def get_single_icl_anns(df, id, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -391,16 +391,16 @@ def get_single_icl_anns(df, id, units='pixel'):
     df = df[df.index == id]
     anns_colums = ['ICLSt_x', 'ICLSt_y', 'ICLEnd_x', 'ICLEnd_y']
 
-    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm
+    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im pixel
     anns = anns.reshape(-1, 2)  # [x, y]
 
-    if units == 'pixel':  # convert values from mm to pixels
+    if units == 'mm':  # convert values from mm to pixels
         pixel_space_x = df.pixel_space_x.values  # [mm / pix]
         pixel_space_y = df.pixel_space_y.values
 
         # convert values from mm to pixels
-        anns[:, 0] /= pixel_space_x  # x
-        anns[:, 1] /= pixel_space_y  # y
+        anns[:, 0] *= pixel_space_x  # x
+        anns[:, 1] *= pixel_space_y  # y
 
     return anns
 
@@ -414,7 +414,7 @@ def get_all_femur_anns(df, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -455,7 +455,7 @@ def get_single_femur_anns(df, id, units='pixel'):
         Annotations data frame.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
 
     Returns
     -------
@@ -466,16 +466,16 @@ def get_single_femur_anns(df, id, units='pixel'):
     df = df[df.index == id]
     anns_colums = ['femurSt_x', 'femurSt_y', 'femurEnd_x', 'femurEnd_y']
 
-    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im mm
+    anns = df[anns_colums].values  # [x, y, x, y, ...] ; corners are given im pixel
     anns = anns.reshape(-1, 2)  # [x, y]
 
-    if units == 'pixel':  # convert values from mm to pixels
+    if units == 'mm':  # convert values from mm to pixels
         pixel_space_x = df.pixel_space_x.values  # [mm / pix]
         pixel_space_y = df.pixel_space_y.values
 
         # convert values from mm to pixels
-        anns[:, 0] /= pixel_space_x  # x
-        anns[:, 1] /= pixel_space_y  # y
+        anns[:, 0] *= pixel_space_x  # x
+        anns[:, 1] *= pixel_space_y  # y
 
     return anns
 
@@ -505,7 +505,7 @@ def get_scan_anns(vert_df=None, rod_df=None, screw_df=None, dicom_df=None, icl_d
         None value means that filtering does not consider that argument.
     units : str, optional
         Corner coordinates value type, one of {'pixel' , 'mm'}
-        Original annotations value type is 'mm'.
+        Original annotations value type is 'pixel'.
     display : bool, optional
         If True, annotations will be displayed on top of the image. dicom_df must be given.
     flipped_anns : float, optional
