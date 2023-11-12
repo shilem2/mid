@@ -127,7 +127,7 @@ class Annotation(MutableMapping):
                 - 'xy': [x, y], i.e. [column, row]
                 - 'rc': [y, x], i.e. [row, column]
             Note that default annotation order is 'xy'.
-        units : str, optinal
+        units : str, optional
             Output array units, one of {'pixel' , 'mm'}.
             If None, units will not be changed.
         keys : list, optional
