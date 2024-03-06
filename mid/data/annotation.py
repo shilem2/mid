@@ -43,12 +43,12 @@ class Annotation(MutableMapping):
     vert_names = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
                   'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
                   'L1', 'L2', 'L3', 'L4', 'L5', 'L6',
-                  'S1', 'S2', 'S3', 'S4', 'S5',
+                  'S1',
                   ]
     vert_names_no_L6 = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7',
                         'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
                         'L1', 'L2', 'L3', 'L4', 'L5', # 'L6',
-                        'S1', 'S2', 'S3', 'S4', 'S5',
+                        'S1',
                         ]
 
 
@@ -166,7 +166,7 @@ class Annotation(MutableMapping):
 
         return values
 
-    def values_transformed(self, transform, inverse=False, order='xy', units=None, keys=None):
+    def values_transformed(self, transform, inverse=False, order='xy', units=None, keys=None, s1_upper_only=True):
         """Get transformed annotation values as an array with specified order and units.
 
         Parameters
@@ -186,6 +186,9 @@ class Annotation(MutableMapping):
         keys : list, optional
             List of keys of which values will be outputted.
             If None, self.keys() will be used.
+        s1_upper_only : bool, optional
+            If True, only upper enplate of s1 will be used.
+            This is useful since in many cases lower endplate of s1 cannot be annotated properly.
 
         Returns
         -------
@@ -197,7 +200,7 @@ class Annotation(MutableMapping):
         assert hasattr(transform, 'units'), "transform must have 'units' attribute"
 
         # get values in xy order and transform units
-        values = self.values(order='xy', units=transform.units, keys=keys)
+        values = self.values(order='xy', units=transform.units, keys=keys, s1_upper_only=s1_upper_only)
 
         # apply transform
         if inverse:
@@ -220,7 +223,7 @@ class Annotation(MutableMapping):
 
         return values
 
-    def values_dict(self, order='xy', units=None, keys=None, transform=None, inverse=False, vert_anns=True):
+    def values_dict(self, order='xy', units=None, keys=None, transform=None, inverse=False, vert_anns=True, s1_upper_only=True):
         """Get dictionary of annotations.
         Similar to values() and values_transformed() methods, with the addition of annotation names.
         """
@@ -228,12 +231,16 @@ class Annotation(MutableMapping):
             keys = self.keys()
 
         if transform is None:
-            values = self.values(order, units, keys)
+            values = self.values(order, units, keys, s1_upper_only)
         else:
-            values = self.values_transformed(transform, inverse, order, units, keys)
+            values = self.values_transformed(transform, inverse, order, units, keys, s1_upper_only)
 
-        step = 4 if vert_anns else 2  # verts have 4 coordinates, other anns have 2
-        values_dict = {key: values[(step * n):(step * n + step)] for n, key in enumerate(keys)}
+        values_dict = {}
+        ind = 0
+        for key in keys:
+            values_len = 2 if (s1_upper_only and (key == 'S1')) else self[key].shape[0]
+            values_dict[key] = values[ind:(ind+values_len)]
+            ind+= values_len
 
         return values_dict
 
